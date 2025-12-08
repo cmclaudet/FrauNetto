@@ -2,14 +2,13 @@ using UnityEngine;
 
 public class Item : MonoBehaviour
 {
-    private Vector3Int[] gridDefinition;
+    // assume each vector is relative to the bottom left corner in grid units
+    public Vector3Int[] gridDefinition;
     private Vector2Int[] currentCells;
-    public Vector3Int[] GridDefinition => gridDefinition;
     public Vector2Int[] CurrentCells => currentCells;
 
-    public void Init(Vector3Int[] gridDefinition, Vector2Int[] currentCells)
+    public void Init(Vector2Int[] currentCells)
     {
-        this.gridDefinition = gridDefinition;
         this.currentCells = currentCells;
     }
 

@@ -4,7 +4,6 @@ using UnityEngine;
 public class ConveyorBeltGrid : MonoBehaviour
 {
     public Vector2Int gridSize;
-    public float cellSize;
     public float moveSpeed;
     public float itemSpawnFrequency;
     public ItemDefinition[] itemDefinitions;
@@ -42,7 +41,7 @@ public class ConveyorBeltGrid : MonoBehaviour
             return;
 
         ItemDefinition itemDef = itemDefinitions[Random.Range(0, itemDefinitions.Length)];
-        if (itemDef.gridDefinition == null || itemDef.gridDefinition.Length == 0)
+        if (itemDef.prefab == null || itemDef.prefab.gridDefinition.Length == 0)
             return;
 
         // Find spawn position at bottom row
@@ -50,7 +49,7 @@ public class ConveyorBeltGrid : MonoBehaviour
 
         for (int x = 0; x < gridSize.x; x++)
         {
-            Vector2Int[] cells = GetCellsForGridPosition(x, 0, itemDef.gridDefinition);
+            Vector2Int[] cells = GetCellsForGridPosition(x, 0, itemDef.prefab.gridDefinition);
             if (gridManager.AreAllCellsFree(cells))
             {
                 validSpawnX.Add(x);
@@ -71,7 +70,7 @@ public class ConveyorBeltGrid : MonoBehaviour
         Item itemObj = Instantiate(itemDef.prefab, worldPos, Quaternion.identity, transform);
         itemObj.name = itemDef.name + "_" + spawnItemCount;
         Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef.prefab}");
-        itemObj.Init(itemDef.gridDefinition, GetCellsForGridPosition(gridX, 0, itemDef.gridDefinition));
+        itemObj.Init(GetCellsForGridPosition(gridX, 0, itemObj.gridDefinition));
         
         gridManager.OccupyCells(itemObj.CurrentCells);
         activeItems.Add(itemObj);
@@ -89,9 +88,9 @@ public class ConveyorBeltGrid : MonoBehaviour
             // Update grid cells
             Vector2Int[] newCells = gridManager.GetCellsForPosition(
                 item.transform.position,
-                item.GridDefinition,
+                item.gridDefinition,
                 transform,
-                cellSize
+                Constants.CellSize
             );
 
             // Check if item moved off grid
@@ -134,9 +133,9 @@ public class ConveyorBeltGrid : MonoBehaviour
         // Get cells for this item in the next grid's coordinate system
         Vector2Int[] newCells = gridManager.GetCellsForPosition(
             item.transform.position,
-            item.GridDefinition,
+            item.gridDefinition,
             transform,
-            cellSize
+            Constants.CellSize
         );
 
         // Check if any cells are in bounds for this grid
@@ -183,8 +182,8 @@ public class ConveyorBeltGrid : MonoBehaviour
     {
         // gridX maps to z-axis (right), gridY maps to negative x-axis (up)
         // Transform is at bottom center, so offset by half grid width
-        float worldX = -gridY * cellSize;
-        float worldZ = (gridX - gridSize.x * 0.5f) * cellSize;
+        float worldX = -gridY * Constants.CellSize;
+        float worldZ = (gridX - gridSize.x * 0.5f) * Constants.CellSize;
         return transform.TransformPoint(new Vector3(worldX, 0, worldZ));
     }
 
