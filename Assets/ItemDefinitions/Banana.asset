@@ -16,4 +16,4 @@ MonoBehaviour:
   - {x: 0, y: 0, z: 0}
   - {x: 1, y: 0, z: 0}
   - {x: 0, y: 0, z: 1}
-  prefab: {fileID: 4668714624082734136, guid: 1f0ed6ca472844de7a1b483884883f33, type: 3}
+  prefab: {fileID: 4531906691861275466, guid: 1f0ed6ca472844de7a1b483884883f33, type: 3}

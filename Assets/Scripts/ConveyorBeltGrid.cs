@@ -10,7 +10,7 @@ public class ConveyorBeltGrid : MonoBehaviour
     public ItemDefinition[] itemDefinitions;
 
     private GridManager gridManager;
-    private List<ConveyorItem> activeItems = new List<ConveyorItem>();
+    private List<Item> activeItems = new List<Item>();
     private float spawnTimer;
     private float spawnItemCount;
 
@@ -63,26 +63,20 @@ public class ConveyorBeltGrid : MonoBehaviour
     {
         Vector3 worldPos = GetWorldPositionFromGrid(gridX, 0);
         spawnItemCount++;
-        GameObject itemObj = Instantiate(itemDef.prefab, worldPos, Quaternion.identity, transform);
+        Item itemObj = Instantiate(itemDef.prefab, worldPos, Quaternion.identity, transform);
         itemObj.name = itemDef.name + "_" + spawnItemCount;
         Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef.prefab}");
-
-        ConveyorItem item = new ConveyorItem
-        {
-            gameObject = itemObj,
-            itemDefinition = itemDef,
-            currentCells = GetCellsForGridPosition(gridX, 0, itemDef.gridDefinition)
-        };
-
-        gridManager.OccupyCells(item.currentCells);
-        activeItems.Add(item);
+        itemObj.Init(itemDef.gridDefinition, GetCellsForGridPosition(gridX, 0, itemDef.gridDefinition));
+        
+        gridManager.OccupyCells(itemObj.CurrentCells);
+        activeItems.Add(itemObj);
     }
 
     void MoveItems()
     {
         for (int i = activeItems.Count - 1; i >= 0; i--)
         {
-            ConveyorItem item = activeItems[i];
+            Item item = activeItems[i];
 
             // Move in negative x direction (upward)
             item.gameObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
@@ -90,7 +84,7 @@ public class ConveyorBeltGrid : MonoBehaviour
             // Update grid cells
             Vector2Int[] newCells = gridManager.GetCellsForPosition(
                 item.gameObject.transform.position,
-                item.itemDefinition.gridDefinition,
+                item.GridDefinition,
                 transform,
                 cellSize
             );
@@ -108,15 +102,15 @@ public class ConveyorBeltGrid : MonoBehaviour
 
             if (offGrid)
             {
-                gridManager.FreeCells(item.currentCells);
+                gridManager.FreeCells(item.CurrentCells);
                 Destroy(item.gameObject);
                 activeItems.RemoveAt(i);
             }
-            else if (!AreCellsSame(item.currentCells, newCells))
+            else if (!AreCellsSame(item.CurrentCells, newCells))
             {
-                gridManager.FreeCells(item.currentCells);
+                gridManager.FreeCells(item.CurrentCells);
                 gridManager.OccupyCells(newCells);
-                item.currentCells = newCells;
+                item.UpdateCells(newCells);
             }
         }
     }
@@ -151,12 +145,5 @@ public class ConveyorBeltGrid : MonoBehaviour
                 return false;
         }
         return true;
-    }
-
-    private class ConveyorItem
-    {
-        public GameObject gameObject;
-        public ItemDefinition itemDefinition;
-        public Vector2Int[] currentCells;
     }
 }

@@ -5,5 +5,5 @@ public class ItemDefinition : ScriptableObject
 {
     // assume each vector is relative to the bottom left corner in grid units
     public Vector3Int[] gridDefinition;
-    public GameObject prefab;
+    public Item prefab;
 }
