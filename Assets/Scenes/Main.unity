@@ -466,7 +466,6 @@ GameObject:
   m_Component:
   - component: {fileID: 384546679}
   - component: {fileID: 384546680}
-  - component: {fileID: 384546681}
   m_Layer: 0
   m_Name: Conveyor Belt Grid
   m_TagString: Untagged
@@ -483,11 +482,12 @@ Transform:
   m_GameObject: {fileID: 384546677}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.858, y: 1.0345396, z: 0.399}
+  m_LocalPosition: {x: 5.8239, y: 1.0345396, z: 0.399}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 99327870}
+  - {fileID: 1832718872}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &384546680
@@ -502,33 +502,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27840d0d0b71a4199bd0b1e29820e890, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 7, y: 50}
+  gridSize: {x: 7, y: 45}
   cellSize: 0.1
   moveSpeed: 0.3
   itemSpawnFrequency: 2
   itemDefinitions:
   - {fileID: 11400000, guid: 765f02b68835f4abf906395737fd1aa7, type: 2}
---- !u!65 &384546681
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 384546677}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 0.6789799}
-  m_Center: {x: 0, y: 0, z: 0}
+  nextGrid: {fileID: 818638099}
+  enableSpawning: 1
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1074,6 +1055,58 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
   m_PrefabInstance: {fileID: 765961597}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &818638097
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 818638100}
+  - component: {fileID: 818638099}
+  m_Layer: 0
+  m_Name: Conveyor Belt Grid (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &818638099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 818638097}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27840d0d0b71a4199bd0b1e29820e890, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridSize: {x: 7, y: 26}
+  cellSize: 0.1
+  moveSpeed: 0.3
+  itemSpawnFrequency: 2
+  itemDefinitions:
+  - {fileID: 11400000, guid: 765f02b68835f4abf906395737fd1aa7, type: 2}
+  nextGrid: {fileID: 0}
+  enableSpawning: 0
+--- !u!4 &818638100
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 818638097}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: 0.15168558, w: 0.9884289}
+  m_LocalPosition: {x: 1.328, y: 1.039, z: 0.399}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 17.449}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -2484,6 +2517,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1807889082}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1832718871
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1832718872}
+  m_Layer: 0
+  m_Name: waypoint (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1832718872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1832718871}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.494, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 384546679}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1893749434
 GameObject:
   m_ObjectHideFlags: 0
@@ -2967,3 +3031,4 @@ SceneRoots:
   - {fileID: 564138066}
   - {fileID: 1644454466}
   - {fileID: 384546679}
+  - {fileID: 818638100}
