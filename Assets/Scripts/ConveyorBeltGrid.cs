@@ -49,7 +49,7 @@ public class ConveyorBeltGrid : MonoBehaviour
 
         for (int x = 0; x < gridSize.x; x++)
         {
-            Vector2Int[] cells = GetCellsForGridPosition(x, 0, itemDef.prefab.gridDefinition);
+            Vector2Int[] cells = GetCellsForGridPosition(x, 0, itemDef.prefab.GetFlatGridDefinition());
             if (gridManager.AreAllCellsFree(cells))
             {
                 validSpawnX.Add(x);
@@ -70,7 +70,7 @@ public class ConveyorBeltGrid : MonoBehaviour
         Item itemObj = Instantiate(itemDef.prefab, worldPos, Quaternion.identity, transform);
         itemObj.name = itemDef.name + "_" + spawnItemCount;
         Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef.prefab}");
-        itemObj.Init(GetCellsForGridPosition(gridX, 0, itemObj.gridDefinition));
+        itemObj.Init(GetCellsForGridPosition(gridX, 0, itemObj.GetFlatGridDefinition()));
         
         gridManager.OccupyCells(itemObj.CurrentCells);
         activeItems.Add(itemObj);
@@ -82,58 +82,121 @@ public class ConveyorBeltGrid : MonoBehaviour
         {
             Item item = activeItems[i];
 
-            // Move in local negative x direction relative to this grid's transform
-            item.transform.position += transform.TransformDirection(Vector3.left) * moveSpeed * Time.deltaTime;
+            // Skip static items
+            if (item.IsStatic)
+                continue;
 
-            // Update grid cells
+            // Calculate new position after movement
+            Vector3 newPosition = item.transform.position + transform.TransformDirection(Vector3.forward) * moveSpeed * Time.deltaTime;
+
+            // Get cells at new position
             Vector2Int[] newCells = gridManager.GetCellsForPosition(
-                item.transform.position,
-                item.gridDefinition,
+                newPosition,
+                item.GetFlatGridDefinition(),
                 transform,
                 Constants.CellSize
             );
 
-            // Check if item moved off grid
-            bool offGrid = true;
-            foreach (var cell in newCells)
+            // Check if cells have changed (crossed midpoint)
+            if (!AreCellsSame(item.CurrentCells, newCells))
             {
-                if (gridManager.IsCellInBounds(cell))
+                // Check if new cells would be off grid
+                bool offGrid = true;
+                foreach (var cell in newCells)
                 {
-                    offGrid = false;
-                    break;
+                    if (gridManager.IsCellInBounds(cell))
+                    {
+                        offGrid = false;
+                        break;
+                    }
                 }
-            }
 
-            if (offGrid)
-            {
-                gridManager.FreeCells(item.CurrentCells);
-
-                // Try to transfer to next grid
-                if (nextGrid != null && nextGrid.TryAddItem(item))
+                if (offGrid)
                 {
-                    activeItems.RemoveAt(i);
+                    // Try to transfer to next grid
+                    if (nextGrid != null)
+                    {
+                        var oldCells = item.CurrentCells;
+                        if (nextGrid.TryAddItem(item, newPosition))
+                        {
+                            Debug.Log($"Moved item {item.name} to next grid");
+                            gridManager.FreeCells(oldCells);
+                            activeItems.RemoveAt(i);
+                        }
+                        else
+                        {
+                            // Haven't reached next grid yet, apply movement
+                            item.transform.position = newPosition;
+                        }
+                    }
+                    else
+                    {
+                        // No next grid, snap to current cell position and make static
+                        Debug.Log($"Item {item.name} is off grid, making static");
+                        item.transform.position = GetWorldPositionFromCells(item.CurrentCells);
+                        item.MakeStatic();
+                    }
                 }
                 else
                 {
-                    Destroy(item.gameObject);
-                    activeItems.RemoveAt(i);
+                    // Check if new cells would collide with any occupied cells
+                    bool wouldCollide = false;
+                    foreach (var cell in newCells)
+                    {
+                        if (gridManager.IsCellOccupied(cell))
+                        {
+                            wouldCollide = true;
+                            break;
+                        }
+                    }
+
+                    if (wouldCollide)
+                    {
+                        // Snap to current cell position and make static
+                        Debug.Log($"Item {item.name} would collide with occupied cell, making static");
+                        item.transform.position = GetWorldPositionFromCells(item.CurrentCells);
+                        item.MakeStatic();
+                    }
+                    else
+                    {
+                        // Move to new cells
+                        item.transform.position = newPosition;
+                        gridManager.FreeCells(item.CurrentCells);
+                        gridManager.OccupyCells(newCells);
+                        item.UpdateCells(newCells);
+                    }
                 }
             }
-            else if (!AreCellsSame(item.CurrentCells, newCells))
+            else
             {
-                gridManager.FreeCells(item.CurrentCells);
-                gridManager.OccupyCells(newCells);
-                item.UpdateCells(newCells);
+                // Cells haven't changed (haven't crossed midpoint), apply movement
+                item.transform.position = newPosition;
             }
         }
     }
 
-    public bool TryAddItem(Item item)
+    Vector3 GetWorldPositionFromCells(Vector2Int[] cells)
     {
-        // Get cells for this item in the next grid's coordinate system
+        // Calculate the center position of the occupied cells
+        // Find the base cell (minimum x and y)
+        int minX = cells[0].x;
+        int minY = cells[0].y;
+        foreach (var cell in cells)
+        {
+            if (cell.x < minX) minX = cell.x;
+            if (cell.y < minY) minY = cell.y;
+        }
+
+        // The base cell corresponds to grid position (0,0) in gridDefinition
+        return GetWorldPositionFromGrid(minX, minY);
+    }
+
+    public bool TryAddItem(Item item, Vector3 newPosition)
+    {
+        // Get cells for this item in the next grid's coordinate system at the new position
         Vector2Int[] newCells = gridManager.GetCellsForPosition(
-            item.transform.position,
-            item.gridDefinition,
+            newPosition,
+            item.GetFlatGridDefinition(),
             transform,
             Constants.CellSize
         );
@@ -160,6 +223,9 @@ public class ConveyorBeltGrid : MonoBehaviour
         item.transform.SetParent(transform, true);
         item.transform.localRotation = Quaternion.identity;
 
+        // Update item position to the new position
+        item.transform.position = newPosition;
+
         // Add to this grid
         gridManager.OccupyCells(newCells);
         item.UpdateCells(newCells);
@@ -168,7 +234,7 @@ public class ConveyorBeltGrid : MonoBehaviour
         return true;
     }
 
-    Vector2Int[] GetCellsForGridPosition(int gridX, int gridY, Vector3Int[] itemShape)
+    Vector2Int[] GetCellsForGridPosition(int gridX, int gridY, Vector2Int[] itemShape)
     {
         Vector2Int[] cells = new Vector2Int[itemShape.Length];
         for (int i = 0; i < itemShape.Length; i++)
@@ -180,10 +246,10 @@ public class ConveyorBeltGrid : MonoBehaviour
 
     Vector3 GetWorldPositionFromGrid(int gridX, int gridY)
     {
-        // gridX maps to z-axis (right), gridY maps to negative x-axis (up)
+        // gridX maps to x-axis (right), gridY maps to z-axis (up)
         // Transform is at bottom center, so offset by half grid width
-        float worldX = -gridY * Constants.CellSize;
-        float worldZ = (gridX - gridSize.x * 0.5f) * Constants.CellSize;
+        float worldX = (gridX - gridSize.x * 0.5f) * Constants.CellSize;
+        float worldZ = gridY * Constants.CellSize;
         return transform.TransformPoint(new Vector3(worldX, 0, worldZ));
     }
 

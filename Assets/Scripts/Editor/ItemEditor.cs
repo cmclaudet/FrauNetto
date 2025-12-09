@@ -34,7 +34,7 @@ public class ItemEditor : Editor
             for (int z = 0; z <= gridSize.z; z++)
             {
                 Vector3 start = GetLocalPosition(gridMin.x, gridMin.y + y, gridMin.z + z, Constants.CellSize);
-                Vector3 end = GetLocalPosition(gridMin.x - gridSize.x, gridMin.y + y, gridMin.z + z, Constants.CellSize);
+                Vector3 end = GetLocalPosition(gridMin.x + gridSize.x, gridMin.y + y, gridMin.z + z, Constants.CellSize);
                 Handles.DrawLine(transform.TransformPoint(start), transform.TransformPoint(end));
             }
         }
@@ -44,8 +44,8 @@ public class ItemEditor : Editor
         {
             for (int z = 0; z <= gridSize.z; z++)
             {
-                Vector3 start = GetLocalPosition(gridMin.x - x, gridMin.y, gridMin.z + z, Constants.CellSize);
-                Vector3 end = GetLocalPosition(gridMin.x - x, gridMin.y + gridSize.y, gridMin.z + z, Constants.CellSize);
+                Vector3 start = GetLocalPosition(gridMin.x + x, gridMin.y, gridMin.z + z, Constants.CellSize);
+                Vector3 end = GetLocalPosition(gridMin.x + x, gridMin.y + gridSize.y, gridMin.z + z, Constants.CellSize);
                 Handles.DrawLine(transform.TransformPoint(start), transform.TransformPoint(end));
             }
         }
@@ -55,8 +55,8 @@ public class ItemEditor : Editor
         {
             for (int y = 0; y <= gridSize.y; y++)
             {
-                Vector3 start = GetLocalPosition(gridMin.x - x, gridMin.y + y, gridMin.z, Constants.CellSize);
-                Vector3 end = GetLocalPosition(gridMin.x - x, gridMin.y + y, gridMin.z + gridSize.z, Constants.CellSize);
+                Vector3 start = GetLocalPosition(gridMin.x + x, gridMin.y + y, gridMin.z, Constants.CellSize);
+                Vector3 end = GetLocalPosition(gridMin.x + x, gridMin.y + y, gridMin.z + gridSize.z, Constants.CellSize);
                 Handles.DrawLine(transform.TransformPoint(start), transform.TransformPoint(end));
             }
         }
@@ -65,7 +65,7 @@ public class ItemEditor : Editor
         Handles.color = new Color(1f, 0.5f, 0f, 0.3f); // Semi-transparent orange
         foreach (Vector3Int cell in item.gridDefinition)
         {
-            Vector3 cellCenter = GetLocalPosition(-cell.x - 0.5f, cell.y + 0.5f, cell.z + 0.5f, Constants.CellSize);
+            Vector3 cellCenter = GetLocalPosition(cell.x + 0.5f, cell.y + 0.5f, cell.z + 0.5f, Constants.CellSize);
             Vector3 worldCenter = transform.TransformPoint(cellCenter);
 
             // Draw a cube for each occupied cell

@@ -52,15 +52,15 @@ public class GridManager
         return cell.x >= 0 && cell.x < gridSize.x && cell.y >= 0 && cell.y < gridSize.y;
     }
 
-    public Vector2Int[] GetCellsForPosition(Vector3 worldPosition, Vector3Int[] itemShape, Transform gridTransform, float cellSize)
+    public Vector2Int[] GetCellsForPosition(Vector3 worldPosition, Vector2Int[] itemShape, Transform gridTransform, float cellSize)
     {
         Vector3 localPos = gridTransform.InverseTransformPoint(worldPosition);
 
         // Convert to grid coordinates
-        // x-axis (negative = up) maps to y in grid, z-axis (positive = right) maps to x in grid
+        // x-axis maps to x in grid, z-axis maps to y in grid
         // Account for center offset: reverse the (gridX - gridSize.x * 0.5f) offset applied in GetWorldPositionFromGrid
-        int gridX = Mathf.RoundToInt(localPos.z / cellSize + gridSize.x * 0.5f);
-        int gridY = Mathf.RoundToInt(-localPos.x / cellSize);
+        int gridX = Mathf.RoundToInt(localPos.x / cellSize + gridSize.x * 0.5f);
+        int gridY = Mathf.RoundToInt(localPos.z / cellSize);
 
         Vector2Int[] cells = new Vector2Int[itemShape.Length];
         for (int i = 0; i < itemShape.Length; i++)
