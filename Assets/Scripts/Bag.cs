@@ -127,4 +127,61 @@ public class Bag : MonoBehaviour
         
         return transform.TransformPoint(new Vector3(worldX, worldY, worldZ));
     }
+
+    /// <summary>
+    /// Validates if an item can be placed at the given XZ grid position and returns the preview position.
+    /// Returns true and sets previewPosition if valid, false otherwise.
+    /// </summary>
+    /// <param name="item">The item to validate placement for</param>
+    /// <param name="gridX">X position on the grid</param>
+    /// <param name="gridZ">Z position on the grid</param>
+    /// <param name="previewPosition">The world position where the item would be placed</param>
+    /// <returns>True if placement is valid, false otherwise</returns>
+    public bool TryGetPreviewPosition(Item item, int gridX, int gridZ, out Vector3 previewPosition)
+    {
+        previewPosition = Vector3.zero;
+        Vector3Int[] itemShape = item.gridDefinition;
+        
+        // Check bounds: get min/max X and Z from item's grid definition
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minZ = int.MaxValue, maxZ = int.MinValue;
+        
+        foreach (var cell in itemShape)
+        {
+            int cellX = gridX + cell.x;
+            int cellZ = gridZ + cell.z;
+            
+            if (cellX < minX) minX = cellX;
+            if (cellX > maxX) maxX = cellX;
+            if (cellZ < minZ) minZ = cellZ;
+            if (cellZ > maxZ) maxZ = cellZ;
+        }
+        
+        // Check if entire item is within bag grid bounds
+        if (minX < 0 || maxX >= gridSize.x || minZ < 0 || maxZ >= gridSize.z)
+        {
+            return false;
+        }
+        
+        // Find the lowest available Y position
+        int gridY = gridManager.FindLowestAvailableY(gridX, gridZ, itemShape);
+        
+        if (gridY < 0)
+        {
+            return false;
+        }
+        
+        // Calculate the cells this item would occupy
+        Vector3Int[] cells = GetCellsForGridPosition(gridX, gridY, gridZ, itemShape);
+        
+        // Double-check all cells are free (should be guaranteed by FindLowestAvailableY, but be safe)
+        if (!gridManager.AreAllCellsFree(cells))
+        {
+            return false;
+        }
+        
+        // Calculate world position
+        previewPosition = GetWorldPositionFromGrid(gridX, gridY, gridZ);
+        return true;
+    }
 }

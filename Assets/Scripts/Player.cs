@@ -171,53 +171,20 @@ public class Player : MonoBehaviour
         int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
         int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
         
-        // Clamp to grid bounds
-        gridX = Mathf.Clamp(gridX, 0, bag.gridSize.x - 1);
-        gridZ = Mathf.Clamp(gridZ, 0, bag.gridSize.z - 1);
-        
-        // Store the grid position for placement
-        bagGridPosition = new Vector3Int(gridX, 0, gridZ);
-        
-        // Preview position - calculate where the item would be placed
-        Vector3 previewPos = GetBagPreviewPosition(gridX, gridZ);
-        
-        if (previewPos != Vector3.zero)
+        // Try to get a valid preview position
+        Vector3 previewPos;
+        if (bag.TryGetPreviewPosition(draggedItem, gridX, gridZ, out previewPos))
         {
+            // Valid placement - show preview and store grid position
             draggedItem.transform.position = previewPos;
+            bagGridPosition = new Vector3Int(gridX, 0, gridZ);
         }
         else
         {
-            // If no valid position, keep at current position
+            // Invalid placement - keep item at drag position and clear grid position
+            draggedItem.transform.position = worldPosition;
             bagGridPosition = null;
         }
-    }
-    
-    Vector3 GetBagPreviewPosition(int gridX, int gridZ)
-    {
-        // We need to calculate where the item would go based on the bag's FindLowestAvailableY logic
-        // For preview purposes, we'll create a temporary calculation
-        
-        // Get the item shape
-        Vector3Int[] itemShape = draggedItem.gridDefinition;
-        
-        // Find min Y in item shape to align bottom of item
-        int minShapeY = int.MaxValue;
-        foreach (var cell in itemShape)
-        {
-            if (cell.y < minShapeY)
-                minShapeY = cell.y;
-        }
-        
-        // Try to find a valid Y position (we can't use the bag's method directly without modifying it)
-        // For now, let's estimate: find lowest Y where bottom cells would be
-        int estimatedY = 0; // Start from bottom
-        
-        // Calculate world position
-        float worldX = (gridX - bag.gridSize.x * 0.5f) * Constants.CellSize;
-        float worldY = (estimatedY - minShapeY) * Constants.CellSize; // Adjust so bottom of item aligns
-        float worldZ = (gridZ - bag.gridSize.z * 0.5f) * Constants.CellSize;
-        
-        return bag.transform.TransformPoint(new Vector3(worldX, worldY, worldZ));
     }
     
     void ReleaseItem()

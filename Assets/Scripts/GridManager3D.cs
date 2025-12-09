@@ -102,7 +102,7 @@ public class GridManager3D
         // Check that all cells above the item's XZ footprint are free up to maxItemY
         foreach (var xz in xzFootprint)
         {
-            for (int y = 0; y < gridY; y++)
+            for (int y = gridY; y < gridSize.y; y++)
             {
                 Vector3Int checkCell = new Vector3Int(xz.x, y, xz.y);
                 if (IsCellOccupied(checkCell))

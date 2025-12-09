@@ -485,7 +485,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: {x: 7, y: 45}
-  moveSpeed: 3
+  moveSpeed: 1
   itemSpawnFrequency: 2
   itemPrefabs:
   - {fileID: 4531906691861275466, guid: 1f0ed6ca472844de7a1b483884883f33, type: 3}
@@ -1008,7 +1008,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: {x: 7, y: 26}
-  moveSpeed: 3
+  moveSpeed: 1
   itemSpawnFrequency: 2
   itemPrefabs: []
   nextGrid: {fileID: 0}
