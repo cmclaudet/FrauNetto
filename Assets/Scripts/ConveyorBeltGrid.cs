@@ -6,7 +6,7 @@ public class ConveyorBeltGrid : MonoBehaviour
     public Vector2Int gridSize;
     public float moveSpeed;
     public float itemSpawnFrequency;
-    public ItemDefinition[] itemDefinitions;
+    public Item[] itemPrefabs;
     public ConveyorBeltGrid nextGrid;
     public bool enableSpawning = true;
 
@@ -37,11 +37,11 @@ public class ConveyorBeltGrid : MonoBehaviour
 
     void TrySpawnItem()
     {
-        if (itemDefinitions == null || itemDefinitions.Length == 0)
+        if (itemPrefabs == null || itemPrefabs.Length == 0)
             return;
 
-        ItemDefinition itemDef = itemDefinitions[Random.Range(0, itemDefinitions.Length)];
-        if (itemDef.prefab == null || itemDef.prefab.gridDefinition.Length == 0)
+        Item itemDef = itemPrefabs[Random.Range(0, itemPrefabs.Length)];
+        if (itemDef.gridDefinition.Length == 0)
             return;
 
         // Find spawn position at bottom row
@@ -49,7 +49,7 @@ public class ConveyorBeltGrid : MonoBehaviour
 
         for (int x = 0; x < gridSize.x; x++)
         {
-            Vector2Int[] cells = GetCellsForGridPosition(x, 0, itemDef.prefab.GetFlatGridDefinition());
+            Vector2Int[] cells = GetCellsForGridPosition(x, 0, itemDef.GetFlatGridDefinition());
             if (gridManager.AreAllCellsFree(cells))
             {
                 validSpawnX.Add(x);
@@ -63,13 +63,13 @@ public class ConveyorBeltGrid : MonoBehaviour
         }
     }
 
-    void SpawnItem(ItemDefinition itemDef, int gridX)
+    void SpawnItem(Item itemDef, int gridX)
     {
         Vector3 worldPos = GetWorldPositionFromGrid(gridX, 0);
         spawnItemCount++;
-        Item itemObj = Instantiate(itemDef.prefab, worldPos, Quaternion.identity, transform);
+        Item itemObj = Instantiate(itemDef, worldPos, Quaternion.identity, transform);
         itemObj.name = itemDef.name + "_" + spawnItemCount;
-        Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef.prefab}");
+        Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef}");
         itemObj.Init(GetCellsForGridPosition(gridX, 0, itemObj.GetFlatGridDefinition()));
         
         gridManager.OccupyCells(itemObj.CurrentCells);
