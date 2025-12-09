@@ -196,7 +196,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &218973587
 Transform:
   m_ObjectHideFlags: 0
@@ -293,6 +293,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -418,6 +419,27 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!135 &330585548
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 4
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &384546677
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,7 +485,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: {x: 7, y: 45}
-  moveSpeed: 0.3
+  moveSpeed: 3
   itemSpawnFrequency: 2
   itemPrefabs:
   - {fileID: 4531906691861275466, guid: 1f0ed6ca472844de7a1b483884883f33, type: 3}
@@ -669,7 +691,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &564138066
 Transform:
   m_ObjectHideFlags: 0
@@ -908,6 +930,54 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
   m_PrefabInstance: {fileID: 765961597}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &810600317
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 810600318}
+  - component: {fileID: 810600319}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &810600318
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 810600317}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.342, y: 2.74, z: 2.36}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &810600319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 810600317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03268cda2ce2145e195e1fdd9ea2d0d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxPickupDistance: 4
+  pickupPlaneDistance: 2
+  playerCamera: {fileID: 330585545}
+  bag: {fileID: 1839672603}
 --- !u!1 &818638097
 GameObject:
   m_ObjectHideFlags: 0
@@ -938,7 +1008,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: {x: 7, y: 26}
-  moveSpeed: 0.3
+  moveSpeed: 3
   itemSpawnFrequency: 2
   itemPrefabs: []
   nextGrid: {fileID: 0}
@@ -2004,7 +2074,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b20ceac14e20f4adabe7cd187fc13099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 0, y: 0, z: 0}
+  gridSize: {x: 7, y: 4, z: 5}
 --- !u!1 &1893749434
 GameObject:
   m_ObjectHideFlags: 0
@@ -2265,6 +2335,7 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
+  - {fileID: 810600318}
   - {fileID: 384546679}
   - {fileID: 818638100}
   - {fileID: 1277363251}
