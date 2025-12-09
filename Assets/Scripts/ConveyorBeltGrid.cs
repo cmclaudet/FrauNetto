@@ -140,10 +140,11 @@ public class ConveyorBeltGrid : MonoBehaviour
                 else
                 {
                     // Check if new cells would collide with any occupied cells
+                    // (excluding cells currently occupied by this item)
                     bool wouldCollide = false;
                     foreach (var cell in newCells)
                     {
-                        if (gridManager.IsCellOccupied(cell))
+                        if (gridManager.IsCellOccupied(cell) && !IsCellInArray(cell, item.CurrentCells))
                         {
                             wouldCollide = true;
                             break;
@@ -264,5 +265,15 @@ public class ConveyorBeltGrid : MonoBehaviour
                 return false;
         }
         return true;
+    }
+
+    bool IsCellInArray(Vector2Int cell, Vector2Int[] cells)
+    {
+        foreach (var c in cells)
+        {
+            if (c == cell)
+                return true;
+        }
+        return false;
     }
 }
