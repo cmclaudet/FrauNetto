@@ -47,6 +47,12 @@ public class Player : MonoBehaviour
 
         if (draggedItem != null)
         {
+            // Handle rotation input while dragging
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                RotateDraggedItem();
+            }
+
             DragItem();
         }
     }
@@ -282,6 +288,30 @@ public class Player : MonoBehaviour
         }
     }
     
+    void RotateDraggedItem()
+    {
+        if (draggedItem != null)
+        {
+            draggedItem.RotateClockwise90();
+
+            // If we're hovering over a bag, revalidate the position with the new rotation
+            if (activeBag != null)
+            {
+                Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+                float enter;
+                Plane plane = new Plane(dragPlaneNormal, dragPlanePoint);
+
+                if (plane.Raycast(ray, out enter))
+                {
+                    Vector3 targetPosition = ray.GetPoint(enter) + dragOffset;
+                    UpdateBagHoverPosition(targetPosition, activeBag);
+                }
+            }
+
+            Debug.Log($"Rotated item {draggedItem.name}");
+        }
+    }
+
     void ReleaseItem()
     {
         // Check if we're hovering over the bag with a valid position
@@ -307,7 +337,7 @@ public class Player : MonoBehaviour
             // Attempt to release item outside bag, keep dragging
             Debug.Log($"Invalid placement attempt of item {draggedItem.name}, keep dragging");
         }
-        
-        
+
+
     }
 }

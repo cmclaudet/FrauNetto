@@ -485,12 +485,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: {x: 7, y: 45}
-  moveSpeed: 1
+  moveSpeed: 2
   itemSpawnFrequency: 2
   itemPrefabs:
   - {fileID: 4531906691861275466, guid: 1f0ed6ca472844de7a1b483884883f33, type: 3}
   - {fileID: 4531906691861275466, guid: ceb4a40d920b94fb281cd8e078c4c9e6, type: 3}
-  - {fileID: 4531906691861275466, guid: 4b9cb1bb572ba449b8e4660454e494d0, type: 3}
   nextGrid: {fileID: 818638099}
   enableSpawning: 1
 --- !u!1 &410087039
