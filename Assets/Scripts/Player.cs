@@ -189,13 +189,18 @@ public class Player : MonoBehaviour
         dragPlanePoint = playerCamera.transform.position + dragPlaneNormal * pickupPlaneDistance;
 
         // Calculate offset from hit point to item center
-        dragOffset = item.transform.position - hitPoint;
+        dragOffset = -GetHalfItemGridSize(item);
 
         // Detach from bag parent
         item.transform.SetParent(null);
         item.transform.rotation = Quaternion.identity;
     }
-    
+
+    private static Vector3 GetHalfItemGridSize(Item item)
+    {
+        return new Vector3(item.GetGridSize().x, 0, item.GetGridSize().y) * Constants.CellSize / 2f;
+    }
+
     void DragItem()
     {
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
@@ -212,7 +217,7 @@ public class Player : MonoBehaviour
             if (IsPositionOverBag(targetPosition, out Bag bag))
             {
                 Debug.Log($"Hovering over bag {bag.name} at grid position {bagGridPosition}");
-                UpdateBagHoverPosition(targetPosition, bag);
+                UpdateBagHoverPosition(targetPosition, bag, draggedItem);
             }
             else
             {
@@ -247,7 +252,7 @@ public class Player : MonoBehaviour
         return false;
     }
     
-    void UpdateBagHoverPosition(Vector3 worldPosition, Bag bag)
+    void UpdateBagHoverPosition(Vector3 worldPosition, Bag bag, Item item)
     {
         // Raycast from camera through mouse cursor to find hit point on bag
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
@@ -258,7 +263,7 @@ public class Player : MonoBehaviour
         if (bagCollider != null && bagCollider.Raycast(ray, out hit, Mathf.Infinity))
         {
             // Convert hit point on bag to grid coordinates
-            Vector3 localPos = bag.transform.InverseTransformPoint(hit.point);
+            Vector3 localPos = bag.transform.InverseTransformPoint(hit.point - GetHalfItemGridSize(item));
             int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
             int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
 
@@ -304,7 +309,7 @@ public class Player : MonoBehaviour
                 if (plane.Raycast(ray, out enter))
                 {
                     Vector3 targetPosition = ray.GetPoint(enter) + dragOffset;
-                    UpdateBagHoverPosition(targetPosition, activeBag);
+                    UpdateBagHoverPosition(targetPosition, activeBag, draggedItem);
                 }
             }
 

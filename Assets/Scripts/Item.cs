@@ -130,7 +130,7 @@ public class Item : MonoBehaviour
         return new Vector2(centerX, centerZ);
     }
 
-    private Vector2 GetGridSize()
+    public Vector2 GetGridSize()
     {
         // Find the bounds of the grid definition in the XZ plane
         int minX = int.MaxValue, maxX = int.MinValue;
