@@ -178,7 +178,7 @@ public class Player : MonoBehaviour
         foreach (var bag in bags)
         {
             // Get the grid position of the item in the bag
-            Vector3 localPos = bag.transform.InverseTransformPoint(item.transform.position);
+            Vector3 localPos = bag.transform.InverseTransformPoint(hitPoint);
             int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
             int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
 

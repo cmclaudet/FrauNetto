@@ -90,5 +90,53 @@ public class BagEditor : Editor
         // Top back right (gridSize.x-1, gridSize.y-1, gridSize.z-1)
         Vector3 topBackRight = transform.TransformPoint(new Vector3(bag.gridSize.x * 0.5f * Constants.CellSize, bag.gridSize.y * Constants.CellSize, bag.gridSize.z * 0.5f * Constants.CellSize));
         Handles.Label(topBackRight, $"({bag.gridSize.x-1}, {bag.gridSize.y-1}, {bag.gridSize.z-1})");
+
+        // Draw occupied cells
+        DrawOccupiedCells(bag, transform);
+    }
+
+    void DrawOccupiedCells(Bag bag, Transform transform)
+    {
+        // Access the grid manager through reflection to get occupied cells
+        var gridManagerField = typeof(Bag).GetField("gridManager", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        if (gridManagerField == null)
+            return;
+
+        var gridManager = gridManagerField.GetValue(bag);
+        if (gridManager == null)
+            return;
+
+        var gridManager3DType = gridManager.GetType();
+        var isCellOccupiedMethod = gridManager3DType.GetMethod("IsCellOccupied");
+        if (isCellOccupiedMethod == null)
+            return;
+
+        Handles.color = new Color(1f, 0.5f, 0f, 0.3f); // Semi-transparent orange
+
+        // Iterate through all cells in the grid
+        for (int x = 0; x < bag.gridSize.x; x++)
+        {
+            for (int y = 0; y < bag.gridSize.y; y++)
+            {
+                for (int z = 0; z < bag.gridSize.z; z++)
+                {
+                    Vector3Int cell = new Vector3Int(x, y, z);
+                    bool isOccupied = (bool)isCellOccupiedMethod.Invoke(gridManager, new object[] { cell });
+
+                    if (isOccupied)
+                    {
+                        // Calculate cell center in local space
+                        float worldX = (x - bag.gridSize.x * 0.5f + 0.5f) * Constants.CellSize;
+                        float worldY = (y + 0.5f) * Constants.CellSize;
+                        float worldZ = (z - bag.gridSize.z * 0.5f + 0.5f) * Constants.CellSize;
+
+                        Vector3 cellCenter = transform.TransformPoint(new Vector3(worldX, worldY, worldZ));
+
+                        // Draw a cube for each occupied cell
+                        Handles.CubeHandleCap(0, cellCenter, transform.rotation, Constants.CellSize * 0.9f, EventType.Repaint);
+                    }
+                }
+            }
+        }
     }
 }
