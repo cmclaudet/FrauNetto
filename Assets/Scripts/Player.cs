@@ -1,3 +1,4 @@
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -9,6 +10,9 @@ public class Player : MonoBehaviour
     [Header("References")]
     public Camera playerCamera;
     public Bag[] bags;
+
+    public CinemachineCamera bagCamera;
+    public CinemachineCamera cashierCamera;
     
     private Item draggedItem;
     private Vector3 dragPlaneNormal;
@@ -45,6 +49,11 @@ public class Player : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            SwitchCamera();
+        }
+
         if (draggedItem != null)
         {
             // Handle rotation input while dragging
@@ -54,6 +63,20 @@ public class Player : MonoBehaviour
             }
 
             DragItem();
+        }
+    }
+
+    private void SwitchCamera()
+    {
+        if (bagCamera.Priority > cashierCamera.Priority)
+        {
+            bagCamera.Priority = 0;
+            cashierCamera.Priority = 1;
+        }
+        else
+        {
+            bagCamera.Priority = 1;
+            cashierCamera.Priority = 0;
         }
     }
 
