@@ -219,50 +219,63 @@ public class Player : MonoBehaviour
     
     bool IsPositionOverBag(Vector3 worldPosition, out Bag res)
     {
+        // Cast ray from camera through mouse cursor position to check if bag is under cursor
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+
         foreach (var bag in bags)
         {
-            // Cast ray downward from item position to see if it hits the bag
-            Vector3 localPos = bag.transform.InverseTransformPoint(worldPosition);
-
-            // Check if position is within bag bounds on XZ plane
-            float minX = -bag.gridSize.x * 0.5f * Constants.CellSize;
-            float maxX = bag.gridSize.x * 0.5f * Constants.CellSize;
-            float minZ = -bag.gridSize.z * 0.5f * Constants.CellSize;
-            float maxZ = bag.gridSize.z * 0.5f * Constants.CellSize;
-            Debug.Log($"Checking position {localPos} for bag bounds ({minX}, {maxX}, {minZ}, {maxZ})");
-
-            bool isHovering = localPos.x >= minX && localPos.x <= maxX &&
-                   localPos.z >= minZ && localPos.z <= maxZ;
-            if (isHovering)
+            // Check if ray intersects with bag's collider
+            Collider bagCollider = bag.GetComponentInChildren<Collider>();
+            if (bagCollider != null)
             {
-                res = bag;
-                return true;
+                RaycastHit hit;
+                if (bagCollider.Raycast(ray, out hit, Mathf.Infinity))
+                {
+                    res = bag;
+                    return true;
+                }
             }
         }
-        
+
         res = null;
         return false;
     }
     
     void UpdateBagHoverPosition(Vector3 worldPosition, Bag bag)
     {
-        // Convert world position to bag's grid coordinates (XZ)
-        Vector3 localPos = bag.transform.InverseTransformPoint(worldPosition);
-        int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
-        int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
-        
-        // Try to get a valid preview position
-        Vector3 previewPos;
-        if (bag.TryGetPreviewPosition(draggedItem, gridX, gridZ, out previewPos))
+        // Raycast from camera through mouse cursor to find hit point on bag
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+
+        Collider bagCollider = bag.GetComponentInChildren<Collider>();
+        RaycastHit hit;
+
+        if (bagCollider != null && bagCollider.Raycast(ray, out hit, Mathf.Infinity))
         {
-            // Valid placement - show preview and store grid position
-            draggedItem.transform.position = previewPos;
-            bagGridPosition = new Vector3Int(gridX, 0, gridZ);
-            activeBag = bag;
+            // Convert hit point on bag to grid coordinates
+            Vector3 localPos = bag.transform.InverseTransformPoint(hit.point);
+            int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
+            int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
+
+            // Try to get a valid preview position
+            Vector3 previewPos;
+            if (bag.TryGetPreviewPosition(draggedItem, gridX, gridZ, out previewPos))
+            {
+                // Valid placement - show preview and store grid position
+                draggedItem.transform.position = previewPos;
+                bagGridPosition = new Vector3Int(gridX, 0, gridZ);
+                activeBag = bag;
+            }
+            else
+            {
+                // Invalid placement - keep item at drag position and clear grid position
+                draggedItem.transform.position = worldPosition;
+                bagGridPosition = null;
+                activeBag = null;
+            }
         }
         else
         {
-            // Invalid placement - keep item at drag position and clear grid position
+            // Couldn't raycast to bag - keep item at drag position
             draggedItem.transform.position = worldPosition;
             bagGridPosition = null;
             activeBag = null;
