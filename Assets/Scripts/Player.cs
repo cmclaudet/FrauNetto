@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     
     [Header("References")]
     public Camera playerCamera;
-    public Bag bag;
+    public Bag[] bags;
     
     private Item draggedItem;
     private Vector3 dragPlaneNormal;
@@ -17,7 +17,8 @@ public class Player : MonoBehaviour
     private bool isDraggingFromBag;
     private Vector3Int? bagGridPosition; // Grid position in bag when hovering
     private Item hoveredItem; // Currently hovered item (not being dragged)
-    
+    private Bag activeBag;
+
     void Start()
     {
         if (playerCamera == null)
@@ -62,9 +63,9 @@ public class Player : MonoBehaviour
             {
                 // Check if item is on a conveyor belt or in bag
                 ConveyorBeltGrid conveyorBelt = item.GetComponentInParent<ConveyorBeltGrid>();
-                bool isInBag = bag != null && item.transform.parent == bag.transform;
+                Bag bag = item.GetComponentInParent<Bag>();
 
-                if (conveyorBelt != null || isInBag)
+                if (conveyorBelt != null || bag != null)
                 {
                     float distance = Vector3.Distance(playerCamera.transform.position, item.transform.position);
                     if (distance <= maxPickupDistance)
@@ -105,6 +106,7 @@ public class Player : MonoBehaviour
             {
                 // Check if item is on a conveyor belt
                 ConveyorBeltGrid conveyorBelt = item.GetComponentInParent<ConveyorBeltGrid>();
+                Bag bag = item.GetComponentInParent<Bag>();
                 if (conveyorBelt != null)
                 {
                     // Check distance from camera
@@ -115,7 +117,7 @@ public class Player : MonoBehaviour
                     }
                 }
                 // Check if item is in the bag
-                else if (bag != null && item.transform.parent == bag.transform)
+                else if (bag != null)
                 {
                     Debug.Log($"Try picking up item from bag {item.name}");
                     TryPickupItemFromBag(item, hit.point);
@@ -142,22 +144,23 @@ public class Player : MonoBehaviour
     
     void TryPickupItemFromBag(Item item, Vector3 hitPoint)
     {
-        if (bag == null)
-            return;
-        
-        // Get the grid position of the item in the bag
-        Vector3 localPos = bag.transform.InverseTransformPoint(item.transform.position);
-        int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
-        int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
-        
-        // Try to remove the item from the bag
-        Item removedItem = bag.TryRemoveItem(gridX, gridZ);
-        
-        if (removedItem == item)
+        foreach (var bag in bags)
         {
-            PickUpItem(item, hitPoint);
-            
-            Debug.Log($"Picked up item {item.name} from bag at grid position ({gridX}, {gridZ})");
+            // Get the grid position of the item in the bag
+            Vector3 localPos = bag.transform.InverseTransformPoint(item.transform.position);
+            int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
+            int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
+
+            // Try to remove the item from the bag
+            Item removedItem = bag.TryRemoveItem(gridX, gridZ);
+
+            if (removedItem == item)
+            {
+                PickUpItem(item, hitPoint);
+
+                Debug.Log($"Picked up item {item.name} from bag at grid position ({gridX}, {gridZ})");
+                break;
+            }
         }
     }
 
@@ -198,10 +201,10 @@ public class Player : MonoBehaviour
             Vector3 targetPosition = ray.GetPoint(enter) + dragOffset;
             
             // Check if hovering over bag
-            if (bag != null && IsPositionOverBag(targetPosition))
+            if (IsPositionOverBag(targetPosition, out Bag bag))
             {
-                Debug.Log($"Hovering over bag at grid position {bagGridPosition}");
-                UpdateBagHoverPosition(targetPosition);
+                Debug.Log($"Hovering over bag {bag.name} at grid position {bagGridPosition}");
+                UpdateBagHoverPosition(targetPosition, bag);
             }
             else
             {
@@ -212,23 +215,34 @@ public class Player : MonoBehaviour
         }
     }
     
-    bool IsPositionOverBag(Vector3 worldPosition)
+    bool IsPositionOverBag(Vector3 worldPosition, out Bag res)
     {
-        // Cast ray downward from item position to see if it hits the bag
-        Vector3 localPos = bag.transform.InverseTransformPoint(worldPosition);
+        foreach (var bag in bags)
+        {
+            // Cast ray downward from item position to see if it hits the bag
+            Vector3 localPos = bag.transform.InverseTransformPoint(worldPosition);
+
+            // Check if position is within bag bounds on XZ plane
+            float minX = -bag.gridSize.x * 0.5f * Constants.CellSize;
+            float maxX = bag.gridSize.x * 0.5f * Constants.CellSize;
+            float minZ = -bag.gridSize.z * 0.5f * Constants.CellSize;
+            float maxZ = bag.gridSize.z * 0.5f * Constants.CellSize;
+            Debug.Log($"Checking position {localPos} for bag bounds ({minX}, {maxX}, {minZ}, {maxZ})");
+
+            bool isHovering = localPos.x >= minX && localPos.x <= maxX &&
+                   localPos.z >= minZ && localPos.z <= maxZ;
+            if (isHovering)
+            {
+                res = bag;
+                return true;
+            }
+        }
         
-        // Check if position is within bag bounds on XZ plane
-        float minX = -bag.gridSize.x * 0.5f * Constants.CellSize;
-        float maxX = bag.gridSize.x * 0.5f * Constants.CellSize;
-        float minZ = -bag.gridSize.z * 0.5f * Constants.CellSize;
-        float maxZ = bag.gridSize.z * 0.5f * Constants.CellSize;
-        Debug.Log($"Checking position {localPos} for bag bounds ({minX}, {maxX}, {minZ}, {maxZ})");
-        
-        return localPos.x >= minX && localPos.x <= maxX && 
-               localPos.z >= minZ && localPos.z <= maxZ;
+        res = null;
+        return false;
     }
     
-    void UpdateBagHoverPosition(Vector3 worldPosition)
+    void UpdateBagHoverPosition(Vector3 worldPosition, Bag bag)
     {
         // Convert world position to bag's grid coordinates (XZ)
         Vector3 localPos = bag.transform.InverseTransformPoint(worldPosition);
@@ -242,22 +256,24 @@ public class Player : MonoBehaviour
             // Valid placement - show preview and store grid position
             draggedItem.transform.position = previewPos;
             bagGridPosition = new Vector3Int(gridX, 0, gridZ);
+            activeBag = bag;
         }
         else
         {
             // Invalid placement - keep item at drag position and clear grid position
             draggedItem.transform.position = worldPosition;
             bagGridPosition = null;
+            activeBag = null;
         }
     }
     
     void ReleaseItem()
     {
         // Check if we're hovering over the bag with a valid position
-        if (bagGridPosition.HasValue && bag != null)
+        if (bagGridPosition.HasValue && activeBag != null)
         {
             // Try to place item in bag
-            if (bag.TryAddItem(draggedItem, bagGridPosition.Value.x, bagGridPosition.Value.z))
+            if (activeBag.TryAddItem(draggedItem, bagGridPosition.Value.x, bagGridPosition.Value.z))
             {
                 Debug.Log($"Placed item {draggedItem.name} in bag at grid position {bagGridPosition.Value}");
             }
