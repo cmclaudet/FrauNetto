@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
     private Vector3 dragOffset;
     private bool isDraggingFromBag;
     private Vector3Int? bagGridPosition; // Grid position in bag when hovering
+    private Item hoveredItem; // Currently hovered item (not being dragged)
     
     void Start()
     {
@@ -25,19 +26,70 @@ public class Player : MonoBehaviour
     
     void Update()
     {
+        // Handle hover detection when not dragging
+        if (draggedItem == null)
+        {
+            UpdateHover();
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             TryPickupItem();
         }
-        
+
         if (Input.GetMouseButton(0) && draggedItem != null)
         {
             DragItem();
         }
-        
+
         if (Input.GetMouseButtonUp(0) && draggedItem != null)
         {
             ReleaseItem();
+        }
+    }
+
+    void UpdateHover()
+    {
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        Item newHoveredItem = null;
+
+        if (Physics.Raycast(ray, out hit, maxPickupDistance))
+        {
+            Item item = hit.collider.GetComponentInParent<Item>();
+            if (item != null)
+            {
+                // Check if item is on a conveyor belt or in bag
+                ConveyorBeltGrid conveyorBelt = item.GetComponentInParent<ConveyorBeltGrid>();
+                bool isInBag = bag != null && item.transform.parent == bag.transform;
+
+                if (conveyorBelt != null || isInBag)
+                {
+                    float distance = Vector3.Distance(playerCamera.transform.position, item.transform.position);
+                    if (distance <= maxPickupDistance)
+                    {
+                        newHoveredItem = item;
+                    }
+                }
+            }
+        }
+
+        // Update hover state
+        if (newHoveredItem != hoveredItem)
+        {
+            // Reset previous hovered item
+            if (hoveredItem != null)
+            {
+                hoveredItem.ResetHover();
+            }
+
+            // Set new hovered item
+            hoveredItem = newHoveredItem;
+            if (hoveredItem != null)
+            {
+                hoveredItem.SetHover();
+            }
         }
     }
     
@@ -108,14 +160,21 @@ public class Player : MonoBehaviour
     {
         draggedItem = item;
         isDraggingFromBag = true;
-            
+
+        // Reset hover state for the item being picked up
+        if (hoveredItem == item)
+        {
+            hoveredItem = null;
+        }
+        item.ResetHover();
+
         // Setup drag plane parallel to screen at pickupPlaneDistance
         dragPlaneNormal = playerCamera.transform.forward;
         dragPlanePoint = playerCamera.transform.position + dragPlaneNormal * pickupPlaneDistance;
-            
+
         // Calculate offset from hit point to item center
         dragOffset = item.transform.position - hitPoint;
-            
+
         // Detach from bag parent
         item.transform.SetParent(null);
         item.transform.rotation = Quaternion.identity;

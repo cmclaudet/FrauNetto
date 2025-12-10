@@ -48,7 +48,7 @@ MonoBehaviour:
   gridDefinition:
   - {x: 0, y: 0, z: 0}
   - {x: 1, y: 0, z: 0}
-  material: {fileID: 0}
+  itemRenderer: {fileID: 4302521691498121275}
   currentCells: []
 --- !u!1001 &3203243573886194879
 PrefabInstance:
@@ -147,5 +147,10 @@ BoxCollider:
 --- !u!4 &3170125610718032724 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 49e053dddef874875be3c4779d6c08e9, type: 3}
+  m_PrefabInstance: {fileID: 3203243573886194879}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &4302521691498121275 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 49e053dddef874875be3c4779d6c08e9, type: 3}
   m_PrefabInstance: {fileID: 3203243573886194879}
   m_PrefabAsset: {fileID: 0}

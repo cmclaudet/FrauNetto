@@ -49,7 +49,7 @@ MonoBehaviour:
   - {x: 0, y: 0, z: 0}
   - {x: 1, y: 0, z: 0}
   - {x: 1, y: 0, z: 1}
-  material: {fileID: 0}
+  itemRenderer: {fileID: 1003238227930553546}
   currentCells: []
 --- !u!1001 &1886342470422626382
 PrefabInstance:
@@ -127,6 +127,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3100980681812455492}
   m_SourcePrefab: {fileID: 100100000, guid: 759b1ed1729f84d1f874016743591a3f, type: 3}
+--- !u!23 &1003238227930553546 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 759b1ed1729f84d1f874016743591a3f, type: 3}
+  m_PrefabInstance: {fileID: 1886342470422626382}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1651919096193432863 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 759b1ed1729f84d1f874016743591a3f, type: 3}

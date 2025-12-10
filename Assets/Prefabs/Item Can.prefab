@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridDefinition:
   - {x: 0, y: 0, z: 0}
-  material: {fileID: 0}
+  itemRenderer: {fileID: 646669159062562557}
   currentCells: []
 --- !u!1001 &2249824598419667577
 PrefabInstance:
@@ -113,6 +113,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2451280123472597040}
   m_SourcePrefab: {fileID: 100100000, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
+--- !u!23 &646669159062562557 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
+  m_PrefabInstance: {fileID: 2249824598419667577}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1439342482972231464 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
