@@ -117,6 +117,7 @@ public class Player : MonoBehaviour
                 // Check if item is in the bag
                 else if (bag != null && item.transform.parent == bag.transform)
                 {
+                    Debug.Log($"Try picking up item from bag {item.name}");
                     TryPickupItemFromBag(item, hit.point);
                 }
             }
