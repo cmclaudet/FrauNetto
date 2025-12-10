@@ -39,17 +39,20 @@ public class Bag : MonoBehaviour
 
         // Calculate the cells this item will occupy
         Vector3Int[] cells = GetCellsForGridPosition(gridX, gridY, gridZ, itemShape);
-        
+
         // Occupy the cells
         gridManager.OccupyCells(cells, item);
-        
+
+        // Store the cells in the item
+        item.Init3D(cells);
+
         // Update item position
         Vector3 worldPos = GetWorldPositionFromGrid(gridX, gridY, gridZ);
         item.transform.position = worldPos;
         item.transform.SetParent(transform, true);
-        
+
         Debug.Log($"Added item {item.name} at grid position ({gridX}, {gridY}, {gridZ}), worldPos={worldPos}");
-        
+
         return true;
     }
 
@@ -64,22 +67,22 @@ public class Bag : MonoBehaviour
     {
         // Find the topmost item at this XZ position
         Item item = gridManager.FindTopMostItemAtXZ(gridX, gridZ);
-        
+
         if (item == null)
         {
             Debug.Log($"No item found at grid position ({gridX}, {gridZ})");
             return null;
         }
 
-        // Get all cells occupied by this item (stored in Item.CurrentCells as Vector2Int, need to reconstruct as Vector3Int)
-        // For now, we need to calculate the cells from the item's position
-        Vector3 localPos = transform.InverseTransformPoint(item.transform.position);
-        int itemGridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + gridSize.x * 0.5f);
-        int itemGridY = Mathf.RoundToInt(localPos.y / Constants.CellSize);
-        int itemGridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize);
-        
-        Vector3Int[] itemCells = GetCellsForGridPosition(itemGridX, itemGridY, itemGridZ, item.gridDefinition);
-        
+        // Get the cells that were stored when the item was placed
+        Vector3Int[] itemCells = item.CurrentCells3D;
+
+        if (itemCells == null || itemCells.Length == 0)
+        {
+            Debug.LogError($"Item {item.name} has no stored cells! Cannot remove properly.");
+            return null;
+        }
+
         // Check if the item can be removed (no items above it)
         if (!gridManager.CanRemoveItem(item, itemCells))
         {
@@ -89,9 +92,9 @@ public class Bag : MonoBehaviour
 
         // Free the cells
         gridManager.FreeCells(itemCells);
-        
-        Debug.Log($"Removed item {item.name} from grid position ({gridX}, {gridZ})");
-        
+
+        Debug.Log($"Removed item {item.name} from grid position ({gridX}, {gridZ}), freed {itemCells.Length} cells");
+
         return item;
     }
 

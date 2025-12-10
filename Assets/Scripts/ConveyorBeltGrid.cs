@@ -82,9 +82,12 @@ public class ConveyorBeltGrid : MonoBehaviour
         {
             Item item = activeItems[i];
 
-            // Skip static items
+            // For static items, check if they can resume movement
             if (item.IsStatic)
+            {
+                TryResumeItemMovement(item);
                 continue;
+            }
 
             // Calculate new position after movement
             Vector3 newPosition = item.transform.position + transform.TransformDirection(Vector3.forward) * moveSpeed * Time.deltaTime;
@@ -275,5 +278,60 @@ public class ConveyorBeltGrid : MonoBehaviour
                 return true;
         }
         return false;
+    }
+
+    void TryResumeItemMovement(Item item)
+    {
+        // Look one cell ahead in the forward direction (positive Y in grid coordinates)
+        Vector2Int[] nextCells = new Vector2Int[item.CurrentCells.Length];
+        for (int i = 0; i < item.CurrentCells.Length; i++)
+        {
+            nextCells[i] = new Vector2Int(item.CurrentCells[i].x, item.CurrentCells[i].y + 1);
+        }
+
+        // Check if all next cells are in bounds
+        bool allInBounds = true;
+        foreach (var cell in nextCells)
+        {
+            if (!gridManager.IsCellInBounds(cell))
+            {
+                allInBounds = false;
+                break;
+            }
+        }
+
+        if (allInBounds)
+        {
+            // Check if all next cells are free, excluding cells occupied by this item
+            bool allFree = true;
+            foreach (var cell in nextCells)
+            {
+                if (gridManager.IsCellOccupied(cell) && !IsCellInArray(cell, item.CurrentCells))
+                {
+                    allFree = false;
+                    break;
+                }
+            }
+
+            // If all cells ahead are free, resume movement
+            if (allFree)
+            {
+                item.MakeNonStatic();
+                Debug.Log($"Item {item.name} resumed movement - path is now clear");
+            }
+        }
+    }
+
+    public void RemoveItem(Item item)
+    {
+        if (item.CurrentCells != null && item.CurrentCells.Length > 0)
+        {
+            // Free the cells occupied by this item
+            gridManager.FreeCells(item.CurrentCells);
+            Debug.Log($"Freed {item.CurrentCells.Length} cells for item {item.name} on conveyor belt");
+        }
+
+        // Remove from active items list
+        activeItems.Remove(item);
     }
 }

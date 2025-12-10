@@ -131,8 +131,12 @@ public class Player : MonoBehaviour
         {
             item.MakeStatic();
         }
+
+        // Free the grid cells occupied by this item
+        conveyorBelt.RemoveItem(item);
+
         PickUpItem(item, hitPoint);
-                
+
         Debug.Log($"Picked up item {item.name} from conveyor belt");
     }
     

@@ -7,10 +7,13 @@ public class Item : MonoBehaviour
     public Renderer itemRenderer;
     [SerializeField]
     private Vector2Int[] currentCells;
+    [SerializeField]
+    private Vector3Int[] currentCells3D;
     private bool isStatic = false;
     private Color originalColor;
 
     public Vector2Int[] CurrentCells => currentCells;
+    public Vector3Int[] CurrentCells3D => currentCells3D;
     public bool IsStatic => isStatic;
 
     public void Init(Vector2Int[] currentCells)
@@ -19,14 +22,30 @@ public class Item : MonoBehaviour
         originalColor = itemRenderer.material.color;
     }
 
+    public void Init3D(Vector3Int[] currentCells3D)
+    {
+        this.currentCells3D = currentCells3D;
+        originalColor = itemRenderer.material.color;
+    }
+
     public void UpdateCells(Vector2Int[] newCells)
     {
         currentCells = newCells;
     }
 
+    public void UpdateCells3D(Vector3Int[] newCells)
+    {
+        currentCells3D = newCells;
+    }
+
     public void MakeStatic()
     {
         isStatic = true;
+    }
+
+    public void MakeNonStatic()
+    {
+        isStatic = false;
     }
 
     public void SetHover()
