@@ -35,17 +35,19 @@ public class Player : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            TryPickupItem();
+            if (draggedItem == null)
+            {
+                TryPickupItem();
+            }
+            else
+            {
+                ReleaseItem();
+            }
         }
 
-        if (Input.GetMouseButton(0) && draggedItem != null)
+        if (draggedItem != null)
         {
             DragItem();
-        }
-
-        if (Input.GetMouseButtonUp(0) && draggedItem != null)
-        {
-            ReleaseItem();
         }
     }
 
@@ -276,22 +278,23 @@ public class Player : MonoBehaviour
             if (activeBag.TryAddItem(draggedItem, bagGridPosition.Value.x, bagGridPosition.Value.z))
             {
                 Debug.Log($"Placed item {draggedItem.name} in bag at grid position {bagGridPosition.Value}");
+                // Clean up
+                draggedItem = null;
+                bagGridPosition = null;
+                isDraggingFromBag = false;
             }
             else
             {
-                // Failed to place in bag, drop item at current position
+                // Failed to place in bag, keep dragging
                 Debug.Log($"Failed to place item {draggedItem.name} in bag");
             }
         }
         else
         {
-            // Released outside bag - item just stays where it is
-            Debug.Log($"Released item {draggedItem.name} outside bag");
+            // Attempt to release item outside bag, keep dragging
+            Debug.Log($"Invalid placement attempt of item {draggedItem.name}, keep dragging");
         }
         
-        // Clean up
-        draggedItem = null;
-        bagGridPosition = null;
-        isDraggingFromBag = false;
+        
     }
 }
