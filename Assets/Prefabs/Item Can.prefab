@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridDefinition:
   - {x: 0, y: 0, z: 0}
+  material: {fileID: 0}
   currentCells: []
 --- !u!1001 &2249824598419667577
 PrefabInstance:
@@ -96,6 +97,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 49e09c8d2baad46e7b3e116fd477b0b3, type: 2}
     - target: {fileID: 919132149155446097, guid: cb6a920ddd468498ca1ce3af53066bb5, type: 3}
       propertyPath: m_Name
       value: SM_Can

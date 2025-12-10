@@ -4,9 +4,11 @@ public class Item : MonoBehaviour
 {
     // assume each vector is relative to the bottom left corner in grid units
     public Vector3Int[] gridDefinition;
+    public Material material;
     [SerializeField]
     private Vector2Int[] currentCells;
     private bool isStatic = false;
+    private Color originalColor;
 
     public Vector2Int[] CurrentCells => currentCells;
     public bool IsStatic => isStatic;
@@ -14,6 +16,7 @@ public class Item : MonoBehaviour
     public void Init(Vector2Int[] currentCells)
     {
         this.currentCells = currentCells;
+        originalColor = material.color;
     }
 
     public void UpdateCells(Vector2Int[] newCells)
@@ -24,6 +27,16 @@ public class Item : MonoBehaviour
     public void MakeStatic()
     {
         isStatic = true;
+    }
+
+    public void SetHover()
+    {
+        material.color = Color.yellow;
+    }
+    
+    public void ResetHover()
+    {
+        material.color = originalColor;
     }
 
     public Vector2Int[] GetFlatGridDefinition()
