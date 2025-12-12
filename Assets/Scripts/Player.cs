@@ -227,15 +227,15 @@ public class Player : MonoBehaviour
     void DragItem()
     {
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-        
+
         // Find intersection with drag plane
         float enter;
         Plane plane = new Plane(dragPlaneNormal, dragPlanePoint);
-        
+
         if (plane.Raycast(ray, out enter))
         {
             Vector3 targetPosition = ray.GetPoint(enter) + dragOffset;
-            
+
             // Check if hovering over bag
             if (IsPositionOverBag(targetPosition, out Bag bag))
             {
@@ -247,6 +247,7 @@ public class Player : MonoBehaviour
                 // Just follow cursor on the drag plane
                 draggedItem.transform.position = targetPosition;
                 bagGridPosition = null;
+                draggedItem.ShowGridPreview(false);
             }
         }
     }
@@ -298,6 +299,7 @@ public class Player : MonoBehaviour
                 draggedItem.transform.position = previewPos;
                 bagGridPosition = new Vector3Int(gridX, 0, gridZ);
                 activeBag = bag;
+                draggedItem.ShowGridPreview(true);
             }
             else
             {
@@ -305,6 +307,7 @@ public class Player : MonoBehaviour
                 draggedItem.transform.position = worldPosition;
                 bagGridPosition = null;
                 activeBag = null;
+                draggedItem.ShowGridPreview(false);
             }
         }
         else
@@ -313,6 +316,7 @@ public class Player : MonoBehaviour
             draggedItem.transform.position = worldPosition;
             bagGridPosition = null;
             activeBag = null;
+            draggedItem.ShowGridPreview(false);
         }
     }
     
@@ -349,7 +353,8 @@ public class Player : MonoBehaviour
             if (activeBag.TryAddItem(draggedItem, bagGridPosition.Value.x, bagGridPosition.Value.z))
             {
                 Debug.Log($"Placed item {draggedItem.name} in bag at grid position {bagGridPosition.Value}");
-                // Clean up
+                // Hide grid preview
+                draggedItem.ShowGridPreview(false);
                 draggedItem = null;
                 bagGridPosition = null;
                 isDraggingFromBag = false;

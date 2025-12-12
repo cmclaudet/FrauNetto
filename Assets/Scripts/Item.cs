@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class Item : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class Item : MonoBehaviour
     private Vector3Int[] currentCells3D;
     private bool isStatic = false;
     private Color originalColor;
+    private bool showGridPreview = false;
+    private GameObject gridPreviewContainer;
+    private LineRenderer[] gridLines;
+    private GameObject[] occupiedCellCubes;
 
     public Vector2Int[] CurrentCells => currentCells;
     public Vector3Int[] CurrentCells3D => currentCells3D;
@@ -21,6 +26,8 @@ public class Item : MonoBehaviour
     {
         this.currentCells = currentCells;
         originalColor = itemRenderer.material.color;
+        CreateGridPreview();
+        HideGridPreview();
     }
 
     public void Init3D(Vector3Int[] currentCells3D)
@@ -143,7 +150,88 @@ public class Item : MonoBehaviour
             if (cell.z < minZ) minZ = cell.z;
             if (cell.z > maxZ) maxZ = cell.z;
         }
-        
+
         return new Vector2(1 + maxX - minX, 1 + maxZ - minZ);
+    }
+
+    public void ShowGridPreview(bool show)
+    {
+        if (show && !showGridPreview)
+        {
+            DisplayGridPreview();
+        }
+        else if (!show && showGridPreview)
+        {
+            HideGridPreview();
+        }
+        showGridPreview = show;
+    }
+
+    private void DisplayGridPreview()
+    {
+        if (gridDefinition == null || gridDefinition.Length == 0 || Constants.CellSize <= 0)
+        {
+            return;
+        }
+        if (gridPreviewContainer != null)
+        {
+            gridPreviewContainer.SetActive(true);
+        }
+    }
+
+    private void HideGridPreview()
+    {
+        if (gridPreviewContainer != null)
+        {
+            gridPreviewContainer.SetActive(false);
+        }
+    }
+
+    void CreateGridPreview()
+    {
+        if (gridDefinition == null || gridDefinition.Length == 0 || Constants.CellSize <= 0)
+            return;
+
+        // Create container
+        gridPreviewContainer = new GameObject("GridPreview");
+        gridPreviewContainer.transform.SetParent(rendererContainer.transform);
+        gridPreviewContainer.transform.localPosition = Vector3.zero;
+        gridPreviewContainer.transform.localRotation = Quaternion.identity;
+
+        // Create occupied cell cubes
+        System.Collections.Generic.List<GameObject> cubesList = new System.Collections.Generic.List<GameObject>();
+        foreach (Vector3Int cell in gridDefinition)
+        {
+            Vector3 cellCenter = GetLocalPosition(cell.x + 0.5f, cell.y, cell.z + 0.5f, Constants.CellSize);
+            cubesList.Add(CreateCube(cellCenter, Constants.CellSize * 0.9f));
+        }
+        occupiedCellCubes = cubesList.ToArray();
+    }
+
+    GameObject CreateCube(Vector3 center, float size)
+    {
+        GameObject square = new GameObject();
+        var sprite = square.AddComponent<SpriteRenderer>();
+        Sprite squareSprite = Sprite.Create(
+            Texture2D.whiteTexture,
+            new Rect(0, 0, 1, 1),
+            new Vector2(0.5f, 0.5f),
+            1   // Pixels per unit
+        );
+        sprite.sprite = squareSprite;
+        sprite.transform.SetParent(gridPreviewContainer.transform);
+        var gridSize = GetGridSize() * Constants.CellSize * 0.5f; 
+        sprite.transform.localPosition = new Vector3(center.x - gridSize.x, center.y, center.z - gridSize.y);
+        sprite.transform.localRotation = Quaternion.Euler(new Vector3(90, 0, 0));
+        sprite.transform.localScale = Vector3.one * size;
+        sprite.color = new Color(1f, 0.5f, 0f, 0.3f);
+        
+        return square;
+    }
+
+    Vector3 GetLocalPosition(float gridX, float gridY, float gridZ, float cellSize)
+    {
+        // Map grid coordinates to local space
+        return new Vector3(gridX * cellSize, gridY * cellSize, gridZ * cellSize);
     }
 }
