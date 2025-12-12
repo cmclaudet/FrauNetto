@@ -234,10 +234,10 @@ public class Item : MonoBehaviour
         sprite.sprite = squareSprite;
         sprite.transform.SetParent(gridPreviewContainer.transform);
         var gridSize = GetGridSize() * Constants.CellSize * 0.5f; 
-        sprite.transform.localPosition = new Vector3(center.x - gridSize.x, center.y, center.z - gridSize.y);
+        sprite.transform.localPosition = new Vector3(center.x - gridSize.x, center.y + 0.02f, center.z - gridSize.y);
         sprite.transform.localRotation = Quaternion.Euler(new Vector3(90, 0, 0));
         sprite.transform.localScale = Vector3.one * size;
-        sprite.color = new Color(1f, 0.5f, 0f, 0.3f);
+        sprite.color = new Color(1f, 0.5f, 0f, 0.9f);
         
         return square;
     }

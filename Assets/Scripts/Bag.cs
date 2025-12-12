@@ -99,7 +99,7 @@ public class Bag : MonoBehaviour
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         quad.name = $"Quad_{gridX}_{gridY}_{gridZ}_{normal}";
         quad.transform.SetParent(parent);
-
+        
         // Calculate world position for this grid cell
         float worldX = (gridX - gridSize.x * 0.5f + 0.5f) * Constants.CellSize;
         float worldY = (gridY + 0.5f) * Constants.CellSize;
