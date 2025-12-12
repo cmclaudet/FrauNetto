@@ -49,7 +49,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        if (Input.GetKeyDown(KeyCode.L))// || Input.GetKeyDown(KeyCode.RightShift))
         {
             SwitchCamera();
         }
@@ -340,6 +340,8 @@ public class Player : MonoBehaviour
                 }
             }
 
+            // Update drag offset so item is still centered on the cursor with the new rotation
+            dragOffset = -GetHalfItemGridSize(draggedItem);
             Debug.Log($"Rotated item {draggedItem.name}");
         }
     }
