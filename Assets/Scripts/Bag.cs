@@ -9,6 +9,137 @@ public class Bag : MonoBehaviour
     void Start()
     {
         gridManager = new GridManager3D(gridSize);
+        CreateCrateVisual();
+    }
+
+    private void CreateCrateVisual()
+    {
+        GameObject crateParent = new GameObject("CrateVisual");
+        crateParent.transform.SetParent(transform);
+        crateParent.transform.localPosition = Vector3.zero;
+
+        // Calculate color gradient based on Y rows
+        Color[] rowColors = GenerateColorGradient(gridSize.y);
+
+        // Create quads for each exterior face
+        for (int y = 0; y < gridSize.y; y++)
+        {
+            for (int x = 0; x < gridSize.x; x++)
+            {
+                for (int z = 0; z < gridSize.z; z++)
+                {
+                    // Skip top faces (y == gridSize.y - 1)
+
+                    // Bottom faces (y == 0)
+                    if (y == 0)
+                    {
+                        CreateQuad(crateParent.transform, x, y, z, Vector3.down, rowColors[0]);
+                    }
+
+                    // Front faces (z == 0)
+                    if (z == 0)
+                    {
+                        CreateQuad(crateParent.transform, x, y, z, Vector3.back, rowColors[y]);
+                    }
+
+                    // Back faces (z == gridSize.z - 1)
+                    if (z == gridSize.z - 1)
+                    {
+                        CreateQuad(crateParent.transform, x, y, z, Vector3.forward, rowColors[y]);
+                    }
+
+                    // Left faces (x == 0)
+                    if (x == 0)
+                    {
+                        CreateQuad(crateParent.transform, x, y, z, Vector3.left, rowColors[y]);
+                    }
+
+                    // Right faces (x == gridSize.x - 1)
+                    if (x == gridSize.x - 1)
+                    {
+                        CreateQuad(crateParent.transform, x, y, z, Vector3.right, rowColors[y]);
+                    }
+                }
+            }
+        }
+    }
+
+    private Color[] GenerateColorGradient(int rowCount)
+    {
+        Color[] colors = new Color[rowCount];
+        Color[] baseColors = new Color[] { Color.blue, Color.green, Color.yellow, Color.red };
+
+        if (rowCount <= 4)
+        {
+            // Use base colors directly
+            for (int i = 0; i < rowCount; i++)
+            {
+                colors[i] = baseColors[i];
+            }
+        }
+        else
+        {
+            // Interpolate between base colors
+            for (int i = 0; i < rowCount; i++)
+            {
+                float t = i / (float)(rowCount - 1);
+                float scaledT = t * (baseColors.Length - 1);
+                int lowerIndex = Mathf.FloorToInt(scaledT);
+                int upperIndex = Mathf.Min(lowerIndex + 1, baseColors.Length - 1);
+                float localT = scaledT - lowerIndex;
+                colors[i] = Color.Lerp(baseColors[lowerIndex], baseColors[upperIndex], localT);
+            }
+        }
+
+        return colors;
+    }
+
+    private void CreateQuad(Transform parent, int gridX, int gridY, int gridZ, Vector3 normal, Color color)
+    {
+        GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        quad.name = $"Quad_{gridX}_{gridY}_{gridZ}_{normal}";
+        quad.transform.SetParent(parent);
+
+        // Calculate world position for this grid cell
+        float worldX = (gridX - gridSize.x * 0.5f + 0.5f) * Constants.CellSize;
+        float worldY = (gridY + 0.5f) * Constants.CellSize;
+        float worldZ = (gridZ - gridSize.z * 0.5f + 0.5f) * Constants.CellSize;
+
+        Vector3 localPos = new Vector3(worldX, worldY, worldZ);
+
+        // Offset the quad to the face of the cell
+        localPos += normal * Constants.CellSize * 0.5f;
+
+        quad.transform.localPosition = localPos;
+
+        // Rotate quad to face outward
+        if (normal == Vector3.up)
+            quad.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+        else if (normal == Vector3.down)
+            quad.transform.localRotation = Quaternion.Euler(90, 0, 0);
+        else if (normal == Vector3.forward)
+            quad.transform.localRotation = Quaternion.Euler(0, 0, 0);
+        else if (normal == Vector3.back)
+            quad.transform.localRotation = Quaternion.Euler(0, 180, 0);
+        else if (normal == Vector3.left)
+            quad.transform.localRotation = Quaternion.Euler(0, -90, 0);
+        else if (normal == Vector3.right)
+            quad.transform.localRotation = Quaternion.Euler(0, 90, 0);
+
+        // Scale quad to match cell size
+        quad.transform.localScale = new Vector3(Constants.CellSize, Constants.CellSize, 1);
+
+        // Apply color
+        Renderer renderer = quad.GetComponent<Renderer>();
+        renderer.material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        renderer.material.color = color;
+
+        // Remove collider if present
+        Collider collider = quad.GetComponent<Collider>();
+        if (collider != null)
+        {
+            Destroy(collider);
+        }
     }
 
     public int GetOccupiedCellCount()
