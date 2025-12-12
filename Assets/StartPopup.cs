@@ -9,6 +9,7 @@ public class StartPopup : MonoBehaviour
 
     private void Start()
     {
+        gameObject.SetActive(true);
         startButton.onClick.AddListener(StartGame);
     }
 
