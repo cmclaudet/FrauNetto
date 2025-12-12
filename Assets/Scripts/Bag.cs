@@ -3,12 +3,15 @@ using UnityEngine;
 public class Bag : MonoBehaviour
 {
     public Vector3Int gridSize;
+    public Color[] baseRowColors;
 
     private GridManager3D gridManager;
+    private Color[] rowColors;
 
     void Start()
     {
         gridManager = new GridManager3D(gridSize);
+        rowColors = GenerateColorGradient(gridSize.y);
         CreateCrateVisual();
     }
 
@@ -17,9 +20,6 @@ public class Bag : MonoBehaviour
         GameObject crateParent = new GameObject("CrateVisual");
         crateParent.transform.SetParent(transform);
         crateParent.transform.localPosition = Vector3.zero;
-
-        // Calculate color gradient based on Y rows
-        Color[] rowColors = GenerateColorGradient(gridSize.y);
 
         // Create quads for each exterior face
         for (int y = 0; y < gridSize.y; y++)
@@ -67,7 +67,7 @@ public class Bag : MonoBehaviour
     private Color[] GenerateColorGradient(int rowCount)
     {
         Color[] colors = new Color[rowCount];
-        Color[] baseColors = new Color[] { Color.blue, Color.green, Color.yellow, Color.red };
+        Color[] baseColors = baseRowColors;
 
         if (rowCount <= 4)
         {
@@ -192,6 +192,10 @@ public class Bag : MonoBehaviour
         item.transform.position = worldPos;
         item.transform.SetParent(transform, true);
 
+        // Apply tint based on the lowest Y position
+        int lowestY = GetLowestYFromCells(cells);
+        item.SetTint(GetColorForRow(lowestY));
+
         Debug.Log($"Added item {item.name} at grid position ({gridX}, {gridY}, {gridZ}), worldPos={worldPos}");
 
         return true;
@@ -233,6 +237,9 @@ public class Bag : MonoBehaviour
 
         // Free the cells
         gridManager.FreeCells(itemCells);
+
+        // Reset tint when removed from bag
+        item.ResetTint();
 
         Debug.Log($"Removed item {item.name} from grid position ({gridX}, {gridZ}), freed {itemCells.Length} cells");
 
@@ -309,23 +316,54 @@ public class Bag : MonoBehaviour
         
         // Find the lowest available Y position
         int gridY = gridManager.FindLowestAvailableY(gridX, gridZ, itemShape);
-        
+
         if (gridY < 0)
         {
+            item.ResetTint();
             return false;
         }
-        
+
         // Calculate the cells this item would occupy
         Vector3Int[] cells = GetCellsForGridPosition(gridX, gridY, gridZ, itemShape);
-        
+
         // Double-check all cells are free (should be guaranteed by FindLowestAvailableY, but be safe)
         if (!gridManager.AreAllCellsFree(cells))
         {
+            item.ResetTint();
             return false;
         }
-        
+
         // Calculate world position
         previewPosition = GetWorldPositionFromGrid(gridX, gridY, gridZ);
+
+        // Apply preview tint based on the lowest Y position
+        int lowestY = GetLowestYFromCells(cells);
+        item.SetTint(GetColorForRow(lowestY));
+
         return true;
+    }
+
+    private int GetLowestYFromCells(Vector3Int[] cells)
+    {
+        int lowestY = int.MaxValue;
+        foreach (var cell in cells)
+        {
+            if (cell.y < lowestY)
+                lowestY = cell.y;
+        }
+        return lowestY;
+    }
+
+    public Color GetColorForRow(int y)
+    {
+        if (rowColors == null || rowColors.Length == 0)
+            return Color.white;
+
+        if (y < 0)
+            y = 0;
+        if (y >= rowColors.Length)
+            y = rowColors.Length - 1;
+
+        return rowColors[y];
     }
 }

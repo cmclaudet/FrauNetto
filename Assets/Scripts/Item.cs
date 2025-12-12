@@ -13,6 +13,7 @@ public class Item : MonoBehaviour
     private Vector3Int[] currentCells3D;
     private bool isStatic = false;
     private Color originalColor;
+    private Color currentTint = Color.white;
     private bool showGridPreview = false;
     private GameObject gridPreviewContainer;
     private LineRenderer[] gridLines;
@@ -63,6 +64,18 @@ public class Item : MonoBehaviour
     
     public void ResetHover()
     {
+        itemRenderer.material.color = originalColor * currentTint;
+    }
+
+    public void SetTint(Color tint)
+    {
+        currentTint = tint;
+        itemRenderer.material.color = originalColor * tint;
+    }
+
+    public void ResetTint()
+    {
+        currentTint = Color.white;
         itemRenderer.material.color = originalColor;
     }
 

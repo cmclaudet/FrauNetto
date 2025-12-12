@@ -57,7 +57,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.L))// || Input.GetKeyDown(KeyCode.RightShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
             SwitchCamera();
         }
@@ -258,6 +258,7 @@ public class Player : MonoBehaviour
                 draggedItem.transform.position = targetPosition;
                 bagGridPosition = null;
                 draggedItem.ShowGridPreview(false);
+                draggedItem.ResetTint();
             }
         }
     }
@@ -318,6 +319,7 @@ public class Player : MonoBehaviour
                 bagGridPosition = null;
                 activeBag = null;
                 draggedItem.ShowGridPreview(false);
+                draggedItem.ResetTint();
             }
         }
         else
@@ -327,6 +329,7 @@ public class Player : MonoBehaviour
             bagGridPosition = null;
             activeBag = null;
             draggedItem.ShowGridPreview(false);
+            draggedItem.ResetTint();
         }
     }
     
