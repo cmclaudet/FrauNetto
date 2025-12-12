@@ -13,7 +13,8 @@ public class Player : MonoBehaviour
 
     public CinemachineCamera bagCamera;
     public CinemachineCamera cashierCamera;
-    
+
+    public bool CanControl = true;
     private Item draggedItem;
     private Vector3 dragPlaneNormal;
     private Vector3 dragPlanePoint;
@@ -31,6 +32,10 @@ public class Player : MonoBehaviour
     
     void Update()
     {
+        if (!CanControl)
+        {
+            return;
+        }
         // Handle hover detection when not dragging
         if (draggedItem == null)
         {

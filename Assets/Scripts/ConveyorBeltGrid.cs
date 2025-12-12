@@ -1,4 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Cinemachine;
 using UnityEngine;
 
 public class ConveyorBeltGrid : MonoBehaviour
@@ -9,6 +12,8 @@ public class ConveyorBeltGrid : MonoBehaviour
     public Item[] itemPrefabs;
     public ConveyorBeltGrid nextGrid;
     public bool enableSpawning;
+    public GameOver gameOverScreen;
+    public bool shouldMoveItems = true;
 
     private GridManager gridManager;
     private List<Item> activeItems = new List<Item>();
@@ -32,7 +37,10 @@ public class ConveyorBeltGrid : MonoBehaviour
             }
         }
 
-        MoveItems();
+        if (shouldMoveItems)
+        {
+            MoveItems();
+        }
     }
 
     void TrySpawnItem()
@@ -160,6 +168,11 @@ public class ConveyorBeltGrid : MonoBehaviour
                         Debug.Log($"Item {item.name} would collide with occupied cell, making static");
                         item.transform.position = GetWorldPositionFromCells(item.CurrentCells);
                         item.MakeStatic();
+
+                        if (nextGrid == null && IsItemInFirstRow(item))
+                        {
+                            TriggerGameOver();
+                        }
                     }
                     else
                     {
@@ -177,6 +190,23 @@ public class ConveyorBeltGrid : MonoBehaviour
                 item.transform.position = newPosition;
             }
         }
+    }
+
+    private void TriggerGameOver()
+    {
+        gameOverScreen.SetUp();
+        StartCoroutine(TriggerGameOverDelayed());
+    }
+
+    private IEnumerator TriggerGameOverDelayed()
+    {
+        yield return new WaitForSeconds(2f);
+        gameOverScreen.Display();
+    }
+
+    private bool IsItemInFirstRow(Item item)
+    {
+        return item.CurrentCells.Any(c => c.y == 0);
     }
 
     Vector3 GetWorldPositionFromCells(Vector2Int[] cells)
