@@ -11,6 +11,16 @@ public class Bag : MonoBehaviour
         gridManager = new GridManager3D(gridSize);
     }
 
+    public int GetOccupiedCellCount()
+    {
+        return gridManager.GetOccupiedCellCount();
+    }
+
+    public int GetTotalCellCount()
+    {
+        return gridManager.GetTotalCellCount();
+    }
+
     void Update()
     {
         

@@ -24,6 +24,9 @@ public class Player : MonoBehaviour
     private Item hoveredItem; // Currently hovered item (not being dragged)
     private Bag activeBag;
 
+    private float totalTime = 0;
+    public float TotalTime => totalTime;
+    
     void Start()
     {
         if (playerCamera == null)
@@ -69,6 +72,8 @@ public class Player : MonoBehaviour
 
             DragItem();
         }
+        
+        totalTime += Time.deltaTime;
     }
 
     private void SwitchCamera()

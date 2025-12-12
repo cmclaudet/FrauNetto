@@ -12,6 +12,28 @@ public class GridManager3D
         occupiedCells = new Item[gridSize.x, gridSize.y, gridSize.z];
     }
 
+    public int GetOccupiedCellCount()
+    {
+        int count = 0;
+        for (int x = 0; x < gridSize.x; x++)
+        {
+            for (int y = 0; y < gridSize.y; y++)
+            {
+                for (int z = 0; z < gridSize.z; z++)
+                {
+                    if (occupiedCells[x, y, z] != null)
+                        count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public int GetTotalCellCount()
+    {
+        return gridSize.x * gridSize.y * gridSize.z;
+    }
+
     public bool AreAllCellsFree(Vector3Int[] cells)
     {
         foreach (var cell in cells)

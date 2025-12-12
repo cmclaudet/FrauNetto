@@ -10,6 +10,7 @@ public class GameOver : MonoBehaviour
     public ConveyorBeltGrid[] grids;
     public Player player;
     public CanvasGroup canvasGroup;
+    public GameObject packBagButton;
     
     void Start()
     {
@@ -23,6 +24,7 @@ public class GameOver : MonoBehaviour
 
     public void SetUp()
     {
+        packBagButton.SetActive(false);
         foreach (var grid in grids)
         {
             grid.enableSpawning = false;
