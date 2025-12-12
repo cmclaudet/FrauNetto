@@ -76,6 +76,7 @@ public class ConveyorBeltGrid : MonoBehaviour
         Vector3 worldPos = GetWorldPositionFromGrid(gridX, 0);
         spawnItemCount++;
         Item itemObj = Instantiate(itemDef, worldPos, Quaternion.identity, transform);
+        itemObj.transform.localRotation = Quaternion.identity;
         itemObj.name = itemDef.name + "_" + spawnItemCount;
         Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef}");
         itemObj.Init(GetCellsForGridPosition(gridX, 0, itemObj.GetFlatGridDefinition()));
