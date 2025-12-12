@@ -8,7 +8,7 @@ public class ConveyorBeltGrid : MonoBehaviour
     public float itemSpawnFrequency;
     public Item[] itemPrefabs;
     public ConveyorBeltGrid nextGrid;
-    public bool enableSpawning = true;
+    public bool enableSpawning;
 
     private GridManager gridManager;
     private List<Item> activeItems = new List<Item>();
