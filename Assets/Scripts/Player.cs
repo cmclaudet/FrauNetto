@@ -189,8 +189,8 @@ public class Player : MonoBehaviour
         {
             // Get the grid position of the item in the bag
             Vector3 localPos = bag.transform.InverseTransformPoint(hitPoint);
-            int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
-            int gridZ = Mathf.RoundToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
+            int gridX = Mathf.FloorToInt(localPos.x / Constants.CellSize + bag.gridSize.x * 0.5f);
+            int gridZ = Mathf.FloorToInt(localPos.z / Constants.CellSize + bag.gridSize.z * 0.5f);
 
             // Try to remove the item from the bag
             Item removedItem = bag.TryRemoveItem(gridX, gridZ);
