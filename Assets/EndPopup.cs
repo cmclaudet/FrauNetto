@@ -27,7 +27,7 @@ public class EndPopup : MonoBehaviour
         canvasGroup.blocksRaycasts = true;
         var occupiedCellCount = bag.GetOccupiedCellCount();
         var totalCellCount = bag.GetTotalCellCount();
-        var fillPercent = Mathf.RoundToInt(occupiedCellCount / (float)totalCellCount);
+        var fillPercent = 2 * 100f * Mathf.RoundToInt(occupiedCellCount / (float)totalCellCount);
         var timeSeconds = player.TotalTime;
         var score = 1000f * fillPercent / timeSeconds;
 
