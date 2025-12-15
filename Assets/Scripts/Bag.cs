@@ -152,9 +152,9 @@ public class Bag : MonoBehaviour
         return gridManager.GetTotalCellCount();
     }
 
-    void Update()
+    public bool IsTopLayerFull()
     {
-        
+        return gridManager.IsTopLayerFullyOccupied();
     }
 
     /// <summary>

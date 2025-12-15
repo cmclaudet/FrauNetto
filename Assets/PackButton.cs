@@ -13,7 +13,7 @@ public class PackButton : MonoBehaviour
         button.onClick.AddListener(Pack);
     }
 
-    private void Pack()
+    public void Pack()
     {
         SetUp();
         endPopup.Display();

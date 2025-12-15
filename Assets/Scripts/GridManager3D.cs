@@ -181,4 +181,19 @@ public class GridManager3D
 
         return true;
     }
+
+    public bool IsTopLayerFullyOccupied()
+    {
+        var topYLayer = gridSize.y - 1;
+        for (int x = 0; x < gridSize.x; x++)
+        {
+            for (int z = 0; z < gridSize.z; z++)
+            {
+                if (occupiedCells[x, topYLayer, z] == null)
+                    return false;
+            }
+        }
+        
+        return true;
+    }
 }

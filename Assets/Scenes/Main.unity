@@ -1837,6 +1837,7 @@ MonoBehaviour:
   - {fileID: 998542770}
   bagCamera: {fileID: 1083429054}
   cashierCamera: {fileID: 1804111107}
+  packButton: {fileID: 1937418159}
   CanControl: 1
 --- !u!1 &818638097
 GameObject:

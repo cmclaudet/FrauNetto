@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
 
     public CinemachineCamera bagCamera;
     public CinemachineCamera cashierCamera;
+    
+    public PackButton packButton;
 
     public bool CanControl = true;
     private Item draggedItem;
@@ -518,6 +520,11 @@ public class Player : MonoBehaviour
                 activeConveyorBelt = null;
                 conveyorGridPosition = null;
                 isDraggingFromBag = false;
+
+                if (IsBagFull(activeBag))
+                {
+                    packButton.Pack();
+                }
             }
             else
             {
@@ -554,5 +561,11 @@ public class Player : MonoBehaviour
         }
 
 
+    }
+
+    private bool IsBagFull(Bag bag)
+    {
+        // check if top layer of bag is fully occupied
+        return bag.IsTopLayerFull();
     }
 }
