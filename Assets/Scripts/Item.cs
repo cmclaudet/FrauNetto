@@ -19,6 +19,7 @@ public class Item : MonoBehaviour
     private GameObject gridColliderContainer;
     private LineRenderer[] gridLines;
     private GameObject[] occupiedCellCubes;
+    private GameObject[] gridCubes;
 
     public Vector2Int[] CurrentCells => currentCells;
     public Vector3Int[] CurrentCells3D => currentCells3D;
@@ -31,6 +32,22 @@ public class Item : MonoBehaviour
         CreateGridPreview();
         HideGridPreview();
         CreateGridCubeColliders();
+    }
+
+    public void OnDragStart()
+    {
+        foreach (var gridCube in gridCubes)
+        {
+            gridCube.layer = LayerMask.NameToLayer("Default");
+        }
+    }
+
+    public void OnDragEnd()
+    {
+        foreach (var gridCube in gridCubes)
+        {
+            gridCube.layer = LayerMask.NameToLayer("Grid");
+        }
     }
 
     public void Init3D(Vector3Int[] currentCells3D)
@@ -265,6 +282,8 @@ public class Item : MonoBehaviour
             Vector3 cellCenter = GetLocalPosition(cell.x + 0.5f, cell.y + 0.5f, cell.z + 0.5f, Constants.CellSize);
             cubesList.Add(CreateGridCube(cellCenter, Constants.CellSize));
         }
+        
+        gridCubes = cubesList.ToArray();
     }
 
     private GameObject CreateGridCube(Vector3 center, float size)

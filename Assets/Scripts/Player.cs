@@ -57,7 +57,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        if (Input.GetKeyDown(KeyCode.L))//LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
             SwitchCamera();
         }
@@ -139,12 +139,15 @@ public class Player : MonoBehaviour
     {
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
+        var layerMask = LayerMask.GetMask("Item");
         
-        if (Physics.Raycast(ray, out hit, maxPickupDistance))
+        if (Physics.Raycast(ray, out hit, maxPickupDistance, layerMask))
         {
+            // Debug.Log("Raycast hit " + hit.collider.name);
             Item item = hit.collider.GetComponentInParent<Item>();
             if (item != null)
             {
+                Debug.Log($"Item found {item.name}");
                 // Check if item is on a conveyor belt
                 ConveyorBeltGrid conveyorBelt = item.GetComponentInParent<ConveyorBeltGrid>();
                 Bag bag = item.GetComponentInParent<Bag>();
@@ -180,7 +183,7 @@ public class Player : MonoBehaviour
 
         PickUpItem(item, hitPoint);
 
-        Debug.Log($"Picked up item {item.name} from conveyor belt");
+        // Debug.Log($"Picked up item {item.name} from conveyor belt");
     }
     
     void TryPickupItemFromBag(Item item, Vector3 hitPoint)
@@ -227,6 +230,8 @@ public class Player : MonoBehaviour
         // Detach from bag parent
         item.transform.SetParent(null);
         item.transform.rotation = Quaternion.identity;
+        
+        draggedItem.OnDragStart();
     }
 
     private static Vector3 GetHalfItemGridSize(Item item)
@@ -249,7 +254,7 @@ public class Player : MonoBehaviour
             // Check if hovering over bag
             if (IsPositionOverBag(targetPosition, out Bag bag))
             {
-                Debug.Log($"Hovering over bag {bag.name} at grid position {bagGridPosition}");
+                // Debug.Log($"Hovering over bag {bag.name} at grid position {bagGridPosition}");
                 UpdateBagHoverPosition(targetPosition, bag, draggedItem);
             }
             else
@@ -268,13 +273,31 @@ public class Player : MonoBehaviour
         // Cast ray from camera through mouse cursor position to check if bag is under cursor
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
 
+        // First, check if we're hovering over a Grid collider (placed items in bag)
+        int gridLayerMask = LayerMask.GetMask("Grid");
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, gridLayerMask))
+        {
+            // Found a grid collider - find which bag this item belongs to
+            Item hitItem = hit.collider.GetComponentInParent<Item>();
+            if (hitItem != null)
+            {
+                Bag itemBag = hitItem.GetComponentInParent<Bag>();
+                if (itemBag != null)
+                {
+                    res = itemBag;
+                    return true;
+                }
+            }
+        }
+
+        // If no Grid collider hit, check for bag collider
         foreach (var bag in bags)
         {
             // Check if ray intersects with bag's collider
             Collider bagCollider = bag.GetComponentInChildren<Collider>();
             if (bagCollider != null)
             {
-                RaycastHit hit;
                 if (bagCollider.Raycast(ray, out hit, Mathf.Infinity))
                 {
                     res = bag;
@@ -289,13 +312,34 @@ public class Player : MonoBehaviour
     
     void UpdateBagHoverPosition(Vector3 worldPosition, Bag bag, Item item)
     {
-        // Raycast from camera through mouse cursor to find hit point on bag
+        // Raycast from camera through mouse cursor to find hit point
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-
-        Collider bagCollider = bag.GetComponentInChildren<Collider>();
         RaycastHit hit;
+        bool hitFound = false;
 
-        if (bagCollider != null && bagCollider.Raycast(ray, out hit, Mathf.Infinity))
+        // First, check if we're hovering over a Grid collider (placed items in bag)
+        int gridLayerMask = LayerMask.GetMask("Grid");
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, gridLayerMask))
+        {
+            // Found a grid collider - find the item component in the parent
+            Item hitItem = hit.collider.GetComponentInParent<Item>();
+            if (hitItem != null)
+            {
+                hitFound = true;
+            }
+        }
+
+        // If no Grid collider hit, check for bag collider
+        if (!hitFound)
+        {
+            Collider bagCollider = bag.GetComponentInChildren<Collider>();
+            if (bagCollider != null && bagCollider.Raycast(ray, out hit, Mathf.Infinity))
+            {
+                hitFound = true;
+            }
+        }
+
+        if (hitFound)
         {
             // Convert hit point on bag to grid coordinates
             Vector3 localPos = bag.transform.InverseTransformPoint(hit.point - GetHalfItemGridSize(item));
@@ -355,7 +399,7 @@ public class Player : MonoBehaviour
 
             // Update drag offset so item is still centered on the cursor with the new rotation
             dragOffset = -GetHalfItemGridSize(draggedItem);
-            Debug.Log($"Rotated item {draggedItem.name}");
+            // Debug.Log($"Rotated item {draggedItem.name}");
         }
     }
 
@@ -367,9 +411,10 @@ public class Player : MonoBehaviour
             // Try to place item in bag
             if (activeBag.TryAddItem(draggedItem, bagGridPosition.Value.x, bagGridPosition.Value.z))
             {
-                Debug.Log($"Placed item {draggedItem.name} in bag at grid position {bagGridPosition.Value}");
+                // Debug.Log($"Placed item {draggedItem.name} in bag at grid position {bagGridPosition.Value}");
                 // Hide grid preview
                 draggedItem.ShowGridPreview(false);
+                draggedItem.OnDragEnd();
                 draggedItem = null;
                 bagGridPosition = null;
                 isDraggingFromBag = false;
@@ -377,13 +422,13 @@ public class Player : MonoBehaviour
             else
             {
                 // Failed to place in bag, keep dragging
-                Debug.Log($"Failed to place item {draggedItem.name} in bag");
+                // Debug.Log($"Failed to place item {draggedItem.name} in bag");
             }
         }
         else
         {
             // Attempt to release item outside bag, keep dragging
-            Debug.Log($"Invalid placement attempt of item {draggedItem.name}, keep dragging");
+            // Debug.Log($"Invalid placement attempt of item {draggedItem.name}, keep dragging");
         }
 
 
