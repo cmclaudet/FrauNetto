@@ -366,4 +366,81 @@ public class ConveyorBeltGrid : MonoBehaviour
         // Remove from active items list
         activeItems.Remove(item);
     }
+
+    /// <summary>
+    /// Validates if an item can be placed at the given grid position and returns the preview position.
+    /// Returns true and sets previewPosition if valid, false otherwise.
+    /// </summary>
+    public bool TryGetPreviewPosition(Item item, int gridX, int gridY, out Vector3 previewPosition)
+    {
+        previewPosition = Vector3.zero;
+        Vector2Int[] itemShape = item.GetFlatGridDefinition();
+
+        // Get cells for this position
+        Vector2Int[] cells = GetCellsForGridPosition(gridX, gridY, itemShape);
+
+        // Check if all cells are in bounds
+        foreach (var cell in cells)
+        {
+            if (!gridManager.IsCellInBounds(cell))
+            {
+                return false;
+            }
+        }
+
+        // Check if all cells are free
+        if (!gridManager.AreAllCellsFree(cells))
+        {
+            return false;
+        }
+
+        // Calculate world position
+        previewPosition = GetWorldPositionFromGrid(gridX, gridY);
+        return true;
+    }
+
+    /// <summary>
+    /// Adds an item from the player at the specified grid position.
+    /// The item will be added to the conveyor belt and start moving.
+    /// </summary>
+    public bool TryAddItemFromPlayer(Item item, int gridX, int gridY)
+    {
+        Vector2Int[] itemShape = item.GetFlatGridDefinition();
+
+        // Get cells for this position
+        Vector2Int[] cells = GetCellsForGridPosition(gridX, gridY, itemShape);
+
+        // Check if all cells are in bounds and free
+        foreach (var cell in cells)
+        {
+            if (!gridManager.IsCellInBounds(cell))
+            {
+                return false;
+            }
+        }
+
+        if (!gridManager.AreAllCellsFree(cells))
+        {
+            return false;
+        }
+
+        // Re-parent item to this grid
+        item.transform.SetParent(transform, true);
+        item.transform.localRotation = Quaternion.identity;
+
+        // Update item position
+        Vector3 worldPos = GetWorldPositionFromGrid(gridX, gridY);
+        item.transform.position = worldPos;
+
+        // Update cells and add to grid
+        item.Init(cells);
+        gridManager.OccupyCells(cells);
+        activeItems.Add(item);
+
+        // Make the item non-static so it can move
+        item.MakeNonStatic();
+
+        Debug.Log($"Added item {item.name} from player at grid position ({gridX}, {gridY})");
+        return true;
+    }
 }

@@ -53,7 +53,6 @@ public class Item : MonoBehaviour
     public void Init3D(Vector3Int[] currentCells3D)
     {
         this.currentCells3D = currentCells3D;
-        originalColor = itemRenderer.material.color;
     }
 
     public void UpdateCells(Vector2Int[] newCells)
@@ -221,6 +220,10 @@ public class Item : MonoBehaviour
 
     void CreateGridPreview()
     {
+        if (gridPreviewContainer != null)
+        {
+            return;
+        }
         if (gridDefinition == null || gridDefinition.Length == 0 || Constants.CellSize <= 0)
             return;
 

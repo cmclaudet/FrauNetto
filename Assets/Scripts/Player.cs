@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
     [Header("References")]
     public Camera playerCamera;
     public Bag[] bags;
+    public ConveyorBeltGrid[] conveyorBelts;
 
     public CinemachineCamera bagCamera;
     public CinemachineCamera cashierCamera;
@@ -21,8 +22,10 @@ public class Player : MonoBehaviour
     private Vector3 dragOffset;
     private bool isDraggingFromBag;
     private Vector3Int? bagGridPosition; // Grid position in bag when hovering
+    private Vector2Int? conveyorGridPosition; // Grid position on conveyor belt when hovering
     private Item hoveredItem; // Currently hovered item (not being dragged)
     private Bag activeBag;
+    private ConveyorBeltGrid activeConveyorBelt;
 
     private float totalTime = 0;
     public float TotalTime => totalTime;
@@ -256,12 +259,24 @@ public class Player : MonoBehaviour
             {
                 // Debug.Log($"Hovering over bag {bag.name} at grid position {bagGridPosition}");
                 UpdateBagHoverPosition(targetPosition, bag, draggedItem);
+                conveyorGridPosition = null;
+                activeConveyorBelt = null;
+            }
+            // Check if hovering over conveyor belt
+            else if (IsPositionOverConveyorBelt(targetPosition, out ConveyorBeltGrid conveyorBelt))
+            {
+                UpdateConveyorHoverPosition(targetPosition, conveyorBelt, draggedItem);
+                bagGridPosition = null;
+                activeBag = null;
             }
             else
             {
                 // Just follow cursor on the drag plane
                 draggedItem.transform.position = targetPosition;
                 bagGridPosition = null;
+                activeBag = null;
+                conveyorGridPosition = null;
+                activeConveyorBelt = null;
                 draggedItem.ShowGridPreview(false);
                 draggedItem.ResetTint();
             }
@@ -376,7 +391,77 @@ public class Player : MonoBehaviour
             draggedItem.ResetTint();
         }
     }
-    
+
+    bool IsPositionOverConveyorBelt(Vector3 worldPosition, out ConveyorBeltGrid res)
+    {
+        // Cast ray from camera through mouse cursor position to check if conveyor belt is under cursor
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+
+        foreach (var conveyorBelt in conveyorBelts)
+        {
+            // Check if ray intersects with conveyor belt's collider
+            Collider conveyorCollider = conveyorBelt.GetComponentInChildren<Collider>();
+            if (conveyorCollider != null)
+            {
+                RaycastHit hit;
+                if (conveyorCollider.Raycast(ray, out hit, Mathf.Infinity))
+                {
+                    res = conveyorBelt;
+                    return true;
+                }
+            }
+        }
+
+        res = null;
+        return false;
+    }
+
+    void UpdateConveyorHoverPosition(Vector3 worldPosition, ConveyorBeltGrid conveyorBelt, Item item)
+    {
+        // Raycast from camera through mouse cursor to find hit point on conveyor belt
+        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+
+        Collider conveyorCollider = conveyorBelt.GetComponentInChildren<Collider>();
+        RaycastHit hit;
+
+        if (conveyorCollider != null && conveyorCollider.Raycast(ray, out hit, Mathf.Infinity))
+        {
+            // Convert hit point on conveyor belt to grid coordinates
+            Vector3 localPos = conveyorBelt.transform.InverseTransformPoint(hit.point - GetHalfItemGridSize(item));
+            int gridX = Mathf.RoundToInt(localPos.x / Constants.CellSize + conveyorBelt.gridSize.x * 0.5f);
+            int gridY = Mathf.RoundToInt(localPos.z / Constants.CellSize);
+
+            // Try to get a valid preview position
+            Vector3 previewPos;
+            if (conveyorBelt.TryGetPreviewPosition(draggedItem, gridX, gridY, out previewPos))
+            {
+                // Valid placement - show preview and store grid position
+                draggedItem.transform.position = previewPos;
+                conveyorGridPosition = new Vector2Int(gridX, gridY);
+                activeConveyorBelt = conveyorBelt;
+                draggedItem.ShowGridPreview(true);
+            }
+            else
+            {
+                // Invalid placement - keep item at drag position and clear grid position
+                draggedItem.transform.position = worldPosition;
+                conveyorGridPosition = null;
+                activeConveyorBelt = null;
+                draggedItem.ShowGridPreview(false);
+                draggedItem.ResetTint();
+            }
+        }
+        else
+        {
+            // Couldn't raycast to conveyor belt - keep item at drag position
+            draggedItem.transform.position = worldPosition;
+            conveyorGridPosition = null;
+            activeConveyorBelt = null;
+            draggedItem.ShowGridPreview(false);
+            draggedItem.ResetTint();
+        }
+    }
+
     void RotateDraggedItem()
     {
         if (draggedItem != null)
@@ -394,6 +479,19 @@ public class Player : MonoBehaviour
                 {
                     Vector3 targetPosition = ray.GetPoint(enter) + dragOffset;
                     UpdateBagHoverPosition(targetPosition, activeBag, draggedItem);
+                }
+            }
+            // If we're hovering over a conveyor belt, revalidate the position with the new rotation
+            else if (activeConveyorBelt != null)
+            {
+                Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+                float enter;
+                Plane plane = new Plane(dragPlaneNormal, dragPlanePoint);
+
+                if (plane.Raycast(ray, out enter))
+                {
+                    Vector3 targetPosition = ray.GetPoint(enter) + dragOffset;
+                    UpdateConveyorHoverPosition(targetPosition, activeConveyorBelt, draggedItem);
                 }
             }
 
@@ -417,6 +515,8 @@ public class Player : MonoBehaviour
                 draggedItem.OnDragEnd();
                 draggedItem = null;
                 bagGridPosition = null;
+                activeConveyorBelt = null;
+                conveyorGridPosition = null;
                 isDraggingFromBag = false;
             }
             else
@@ -425,9 +525,31 @@ public class Player : MonoBehaviour
                 // Debug.Log($"Failed to place item {draggedItem.name} in bag");
             }
         }
+        // Check if we're hovering over the conveyor belt with a valid position
+        else if (conveyorGridPosition.HasValue && activeConveyorBelt != null)
+        {
+            // Try to place item on conveyor belt
+            if (activeConveyorBelt.TryAddItemFromPlayer(draggedItem, conveyorGridPosition.Value.x, conveyorGridPosition.Value.y))
+            {
+                // Debug.Log($"Placed item {draggedItem.name} on conveyor belt at grid position {conveyorGridPosition.Value}");
+                // Hide grid preview
+                draggedItem.ShowGridPreview(false);
+                draggedItem.OnDragEnd();
+                draggedItem = null;
+                conveyorGridPosition = null;
+                bagGridPosition = null;
+                activeBag = null;
+                isDraggingFromBag = false;
+            }
+            else
+            {
+                // Failed to place on conveyor belt, keep dragging
+                // Debug.Log($"Failed to place item {draggedItem.name} on conveyor belt");
+            }
+        }
         else
         {
-            // Attempt to release item outside bag, keep dragging
+            // Attempt to release item outside bag/conveyor belt, keep dragging
             // Debug.Log($"Invalid placement attempt of item {draggedItem.name}, keep dragging");
         }
 
