@@ -2182,7 +2182,7 @@ MonoBehaviour:
   enableSpawning: 0
   gameOverScreen: {fileID: 1160209560}
   shouldMoveItems: 1
-  forceGameOverOff: 1
+  forceGameOverOff: 0
 --- !u!4 &998542771
 Transform:
   m_ObjectHideFlags: 0
