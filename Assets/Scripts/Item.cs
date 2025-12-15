@@ -16,6 +16,7 @@ public class Item : MonoBehaviour
     private Color currentTint = Color.white;
     private bool showGridPreview = false;
     private GameObject gridPreviewContainer;
+    private GameObject gridColliderContainer;
     private LineRenderer[] gridLines;
     private GameObject[] occupiedCellCubes;
 
@@ -29,6 +30,7 @@ public class Item : MonoBehaviour
         originalColor = itemRenderer.material.color;
         CreateGridPreview();
         HideGridPreview();
+        CreateGridCubeColliders();
     }
 
     public void Init3D(Vector3Int[] currentCells3D)
@@ -246,5 +248,36 @@ public class Item : MonoBehaviour
     {
         // Map grid coordinates to local space
         return new Vector3(gridX * cellSize, gridY * cellSize, gridZ * cellSize);
+    }
+    
+    private void CreateGridCubeColliders()
+    {
+        // Create container
+        gridColliderContainer = new GameObject("GridColliders");
+        gridColliderContainer.transform.SetParent(rendererContainer.transform);
+        gridColliderContainer.transform.localPosition = Vector3.zero;
+        gridColliderContainer.transform.localRotation = Quaternion.identity;
+
+        // Create occupied cell cubes
+        System.Collections.Generic.List<GameObject> cubesList = new System.Collections.Generic.List<GameObject>();
+        foreach (Vector3Int cell in gridDefinition)
+        {
+            Vector3 cellCenter = GetLocalPosition(cell.x + 0.5f, cell.y + 0.5f, cell.z + 0.5f, Constants.CellSize);
+            cubesList.Add(CreateGridCube(cellCenter, Constants.CellSize));
+        }
+    }
+
+    private GameObject CreateGridCube(Vector3 center, float size)
+    {
+        GameObject go = new GameObject();
+        go.layer = LayerMask.NameToLayer("Grid");
+        var coll = go.AddComponent<BoxCollider>();
+        coll.size = new Vector3(size, size, size);
+        coll.transform.SetParent(gridColliderContainer.transform);
+        var gridSize = GetGridSize() * Constants.CellSize * 0.5f; 
+        coll.transform.localPosition = new Vector3(center.x - gridSize.x, center.y, center.z - gridSize.y);
+        coll.transform.localRotation = Quaternion.identity;
+        
+        return go;
     }
 }

@@ -144,6 +144,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Beef
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 49e053dddef874875be3c4779d6c08e9, type: 3}
+      propertyPath: m_Layer
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -14,6 +14,7 @@ public class ConveyorBeltGrid : MonoBehaviour
     public bool enableSpawning;
     public GameOver gameOverScreen;
     public bool shouldMoveItems = true;
+    public bool forceGameOverOff = false;
 
     private GridManager gridManager;
     private List<Item> activeItems = new List<Item>();
@@ -78,7 +79,7 @@ public class ConveyorBeltGrid : MonoBehaviour
         Item itemObj = Instantiate(itemDef, worldPos, Quaternion.identity, transform);
         itemObj.transform.localRotation = Quaternion.identity;
         itemObj.name = itemDef.name + "_" + spawnItemCount;
-        Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef}");
+        // Debug.Log($"Spawning item {itemObj.name} at gridX={gridX}, worldPos={worldPos}, prefab={itemDef}");
         itemObj.Init(GetCellsForGridPosition(gridX, 0, itemObj.GetFlatGridDefinition()));
         
         gridManager.OccupyCells(itemObj.CurrentCells);
@@ -131,7 +132,7 @@ public class ConveyorBeltGrid : MonoBehaviour
                         var oldCells = item.CurrentCells;
                         if (nextGrid.TryAddItem(item, newPosition))
                         {
-                            Debug.Log($"Moved item {item.name} to next grid");
+                            // Debug.Log($"Moved item {item.name} to next grid");
                             gridManager.FreeCells(oldCells);
                             activeItems.RemoveAt(i);
                         }
@@ -144,7 +145,7 @@ public class ConveyorBeltGrid : MonoBehaviour
                     else
                     {
                         // No next grid, snap to current cell position and make static
-                        Debug.Log($"Item {item.name} is off grid, making static");
+                        // Debug.Log($"Item {item.name} is off grid, making static");
                         item.transform.position = GetWorldPositionFromCells(item.CurrentCells);
                         item.MakeStatic();
                     }
@@ -166,11 +167,11 @@ public class ConveyorBeltGrid : MonoBehaviour
                     if (wouldCollide)
                     {
                         // Snap to current cell position and make static
-                        Debug.Log($"Item {item.name} would collide with occupied cell, making static");
+                        // Debug.Log($"Item {item.name} would collide with occupied cell, making static");
                         item.transform.position = GetWorldPositionFromCells(item.CurrentCells);
                         item.MakeStatic();
 
-                        if (nextGrid == null && IsItemInFirstRow(item))
+                        if (!forceGameOverOff && nextGrid == null && IsItemInFirstRow(item))
                         {
                             TriggerGameOver();
                         }
@@ -348,7 +349,7 @@ public class ConveyorBeltGrid : MonoBehaviour
             if (allFree)
             {
                 item.MakeNonStatic();
-                Debug.Log($"Item {item.name} resumed movement - path is now clear");
+                // Debug.Log($"Item {item.name} resumed movement - path is now clear");
             }
         }
     }
@@ -359,7 +360,7 @@ public class ConveyorBeltGrid : MonoBehaviour
         {
             // Free the cells occupied by this item
             gridManager.FreeCells(item.CurrentCells);
-            Debug.Log($"Freed {item.CurrentCells.Length} cells for item {item.name} on conveyor belt");
+            // Debug.Log($"Freed {item.CurrentCells.Length} cells for item {item.name} on conveyor belt");
         }
 
         // Remove from active items list
